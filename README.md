@@ -287,6 +287,88 @@ python -u monoT5.py \
 ```
 
 ### Training label generation 
+#### BM25--RankLLaMA
+```bash
+# TREC-DL 19
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+
+# TREC-DL 20
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+
+```
+
+#### SPLADE++--RankLLaMA
+```bash
+# TREC-DL 19
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+
+
+# TREC-DL 20
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+```
+
+#### RepLLaMA--RankLLaMA
+```bash
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+```
+
+#### BM25--MonoT5
+```bash
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+
+python  -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--metric ndcg@10 \
+--seq_len 1000 \
+--output_path datasets/msmarco-v1-passage/labels
+```
+
 
 ###  Feature generation
 

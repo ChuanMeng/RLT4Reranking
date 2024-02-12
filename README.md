@@ -47,9 +47,9 @@ mv ./datasets/msmarco-v1-passage/qrels/2020qrels-pass.txt ./datasets/msmarco-v1-
 # collection
 mkdir datasets/
 mkdir datasets/msmarco-v1-passage/ 
-mkdir datasets/msmarco-v1-passage/corpus  
-wget -P ./datasets/msmarco-v1-passage/corpus/ https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz --no-check-certificate
-tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets/msmarco-v1-passage/corpus/
+mkdir datasets/msmarco-v1-passage/collection
+wget -P ./datasets/msmarco-v1-passage/collection/ https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz --no-check-certificate
+tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./datasets/msmarco-v1-passage/collection/
 ```
 
 #### Robust04
@@ -57,7 +57,7 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 
 ```
 
-### Fetch retrieved list
+### Obtain retrieved lists
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
@@ -133,8 +133,7 @@ python -u format.py \
 --ranker_name repllama
 ```
 
-### Fetch re-ranked lists
-
+### Obtain re-ranked lists
 We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
 We use 
@@ -400,6 +399,85 @@ python  -u rlt/reranking_labels.py \
 ```
 
 ###  Feature generation
+We need to first build tf-idf and doc2vec models for collections, and then infer features for retrieved lists.
+
+#### Build a tf-idf model for collections:
+
+Use the following commands to build tf-idf models for MS MARCO V1 passage ranking and Robust04 collections:
+```bash
+# MS MARCO V1 passage ranking
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--mode tfidf 
+
+# Robust04
+```
+
+#### Build doc2vec models for collections:
+Use the following commands to train doc2vec models for MS MARCO V1 passage ranking and Robust04 collections:
+```bash
+# MS MARCO V1 passage ranking
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--mode doc2vec --vector_size 128 
+
+# Robust04
+```
+#### Generate features for BM25 ranking results
+
+```bash
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--mode infer 
+
+python -u ./rlt/document_features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--mode infer 
+```
+
+#### Generate features for SPLADE++ ranking results
+
+```bash
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--mode infer 
+
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--mode infer
+``` 
+
+#### Generate features for RepLLaMA ranking results
+```bash
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--mode infer 
+
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--mode infer 
+```
+
 
 ## 3. Train and infer RLT methods
 

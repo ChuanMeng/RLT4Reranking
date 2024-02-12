@@ -13,7 +13,7 @@ This repository is structured into five distinct parts:
 6. Results on Robust04
 
 
-Note that for ease of reproducibility, we already uploaded the predicted performance files for all QPP methods reported in our paper. See here.
+Note that for ease of reproducibility, we already uploaded the predicted performance files for all methods reported in our paper. See here.
 
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.
@@ -154,14 +154,14 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
 --retrieval_results ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
---output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl19.1000.jsonl \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-bm25-1000.jsonl \
 --depth 1000
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl19.1000.jsonl \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-bm25-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
@@ -175,14 +175,14 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_split dl20 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
 --retrieval_results ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
---output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl20.1000.jsonl \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-bm25-1000.jsonl \
 --depth 1000
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl20.1000.jsonl \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-bm25-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
@@ -246,42 +246,42 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
---retrieval_results ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
---output_path rerank_input.repllama.psg.dl19.200.jsonl \
---depth 200
-
-python -u ./tevatron/examples/rankllama/reranker_inference.py \
-  --output_dir=temp \
-  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
-  --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path rerank_input.repllama.psg.dl19.1000.jsonl \
-  --fp16 \
-  --per_device_eval_batch_size 64 \
-  --q_max_len 32 \
-  --p_max_len 164 \
-  --dataset_name json \
-  --encoded_save_path run.rankllama.psg.dl19.1000.txt
-
-# TREC-DL 20
-python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
---query_data_name Tevatron/msmarco-passage \
---query_data_split dl19 \
---corpus_data_name Tevatron/msmarco-passage-corpus \
---retrieval_results /gpfs/work3/0/guse0654/QPP/datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
---output_path rerank_input.repllama.psg.dl19.1000.jsonl \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
+--output_path rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
 --depth 1000
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path rerank_input.repllama.psg.dl20.1000.jsonl \
+  --encode_in_path rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
   --p_max_len 164 \
   --dataset_name json \
-  --encoded_save_path run.rankllama.psg.dl20.1000.txt
+  --encoded_save_path dl-19-passage.run-original-repllama-1000-rankllama-1000.txt
+
+# TREC-DL 20
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl20 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
+--output_path rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
+--depth 1000
+
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path dl-20-passage.run-original-repllama-1000-rankllama-1000.txt
 ```
 
 #### BM25--MonoT5 
@@ -309,13 +309,13 @@ python -u monoT5.py \
 ```
 
 ### Training label generation 
-RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates.  
-Only considering the re-ranking quality would ignore efficiency.
+RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates. 
+However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
 
 
 #### BM25--RankLLaMA
-Use the following 
+Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
 python  -u rlt/reranking_labels.py \
@@ -338,6 +338,7 @@ python  -u rlt/reranking_labels.py \
 ```
 
 #### SPLADE++--RankLLaMA
+Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
 python  -u rlt/reranking_labels.py \
@@ -347,7 +348,6 @@ python  -u rlt/reranking_labels.py \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
-
 
 # TREC-DL 20
 python  -u rlt/reranking_labels.py \
@@ -360,6 +360,7 @@ python  -u rlt/reranking_labels.py \
 ```
 
 #### RepLLaMA--RankLLaMA
+Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 python  -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
@@ -379,6 +380,7 @@ python  -u rlt/reranking_labels.py \
 ```
 
 #### BM25--MonoT5
+Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 python  -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
@@ -396,7 +398,6 @@ python  -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 ```
-
 
 ###  Feature generation
 

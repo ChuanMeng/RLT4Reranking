@@ -136,7 +136,6 @@ python -u format.py \
 ### Obtain re-ranked lists
 We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
-We use 
 We need the source code of Tevatron, so please first clone it: 
 
 ```bash
@@ -424,7 +423,12 @@ python -u ./rlt/features.py \
 --mode doc2vec --vector_size 128 
 
 # Robust04
+
+
 ```
+#### Fetch embedding from RepLLaMA
+
+
 #### Generate features for BM25 ranking results
 
 ```bash
@@ -462,6 +466,8 @@ python -u ./rlt/features.py \
 ``` 
 
 #### Generate features for RepLLaMA ranking results
+
+
 ```bash
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
@@ -479,6 +485,205 @@ python -u ./rlt/features.py \
 ```
 
 
+```bash
+# TREC-DL 19
+python -u ./rlt/embedding.py \
+--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--output_path ./datasets/msmarco-v1-passage/statistics/ \
+--encoder repllama \
+--split dl19 \
+--query_path Tevatron/msmarco-passage \
+--index_path Tevatron/msmarco-passage-corpus \
+--fp16 \
+--q_max_len=512 \
+--p_max_len=512
+
+# TREC-DL 20
+python -u ./rlt/embedding.py \
+--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--output_path ./datasets/msmarco-v1-passage/statistics/ \
+--encoder repllama \
+--split dl20 \
+--query_path Tevatron/msmarco-passage \
+--index_path Tevatron/msmarco-passage-corpus \
+--fp16 \
+--q_max_len=512 \
+--p_max_len=512
+```
+
+
 ## 3. Train and infer RLT methods
+
+### Unsupervised RLT methods
+
+#### Train and infer Bicut
+```bash
+retrievers=("original-splade-pp-ed-pytorch-1000" "original-repllama-1000" "original-bm25-1000")
+alphas=(0.4 0.5 0.6)
+
+# training on dl19, inference on dl20
+for retriever in "${retrievers[@]}"
+do
+	for alpha in "${alphas[@]}"
+	do 
+	# training
+	python -u ./rlt/main.py \
+	--name bicut \
+	--checkpoint_path ./checkpoint_rlt/ \
+	--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever} \
+	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+	--epoch_num 100 \
+	--alpha ${alpha} \
+	--interval 1 \
+	--seq_len 1000 \
+	--batch_size 64 \
+	--binarise_qrels \
+
+	#inference
+	python -u ./rlt/main.py \
+	--name bicut \
+	--checkpoint_path ./checkpoint_rlt/ \
+	--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever} \
+	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+	--epoch_num 100 \
+	--alpha ${alpha} \
+	--interval 1 \
+	--seq_len 1000 \
+	--batch_size 64 \
+	--binarise_qrels \
+	--checkpoint_name dl-19-passage.${retriever}.bicut.alpha${alpha} \
+	--output_path ./output_rlt \
+	--infer
+	done
+done
+
+# training on dl20, inference on d19
+
+for retriever in "${retrievers[@]}"
+do
+	for alpha in "${alphas[@]}"
+	do 
+	# training
+	python -u ./rlt/main.py \
+	--name bicut \
+	--checkpoint_path ./checkpoint_rlt/ \
+	--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever} \
+	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+	--epoch_num 100 \
+	--alpha ${alpha} \
+	--interval 1 \
+	--seq_len 1000 \
+	--batch_size 64 \
+	--binarise_qrels \
+
+	# inference
+	python -u ./rlt/main.py \
+	--name bicut \
+	--checkpoint_path ./checkpoint_rlt/ \
+	--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever} \
+	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+	--epoch_num 100 \
+	--alpha ${alpha} \
+	--interval 1 \
+	--seq_len 1000 \
+	--batch_size 64 \
+	--binarise_qrels \
+	--checkpoint_name dl-20-passage.${retriever}.bicut.alpha${alpha} \
+	--output_path ./output_rlt \
+	--infer
+	done
+done
+```
+
+#### Train and infer Choppy, AttnCut and MtCut 
+```bash
+retrievers=("original-splade-pp-ed-pytorch-1000" "original-repllama-1000" "original-bm25-1000")
+metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
+models=("choppy" "attncut" "mmoecut")
+
+# training on dl19 and inference on dl20
+
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do 
+
+		for model in "${models[@]}"
+		do
+		# training
+		python -u ./rlt/main.py \
+		--name ${model} \
+		--checkpoint_path ./checkpoint_rlt/ \
+		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever} \
+		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
+		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+		--epoch_num 100 \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+		--binarise_qrels \
+
+		# inference
+		python -u ./rlt/main.py \
+		--name ${model} \
+		--checkpoint_path ./checkpoint_rlt/ \
+		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever} \
+		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
+		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+		--epoch_num 100 \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+		--binarise_qrels \
+		--checkpoint_name dl-19-passage.${retriever}.${model}.${metric} \
+		--output_path ./output_rlt \
+		--infer
+
+		done
+	done
+done
+
+# training on dl20 and inference on dl19
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do 
+		for model in "${models[@]}"
+		do
+		# training
+		python -u ./rlt/main.py \
+		--name ${model} \
+		--checkpoint_path ./checkpoint_rlt/ \
+		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever} \
+		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
+		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+		--epoch_num 100 \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+		--binarise_qrels \
+	
+		# inference
+		python -u ./rlt/main.py \
+		--name ${model} \
+		--checkpoint_path ./checkpoint_rlt/ \
+		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever} \
+		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
+		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+		--epoch_num 100 \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+		--binarise_qrels \
+		--checkpoint_name dl-20-passage.${retriever}.${model}.${metric} \
+		--output_path ./output_rlt \
+		--infer
+		done
+	done
+done
+```
+
 
 ## 4. Evaluation

@@ -27,8 +27,8 @@ For ease of reproducibility,
 ### Download raw data
 
 #### MS MARCO V1 passage ranking
+Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 ```bash
-# Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 mkdir datasets/msmarco-v1-passage/queries 
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2020-queries.tsv.gz
@@ -57,6 +57,8 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 ### Fetch retrieved list
 
 #### BM25 
+We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25.
+Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
 ```bash
 # TREC-DL 19
 python -m pyserini.search.lucene \
@@ -74,7 +76,7 @@ python -m pyserini.search.lucene \
   --output datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
   --bm25 --k1 0.9 --b 0.4 --hits 1000
 
-# Roubust04
+# Robust04
 python -m pyserini.search.lucene \
   --threads 16 --batch-size 128 \
   --index /gpfs/work3/0/guse0654/cache/index/lucene-index.beir-v1.0.0-robust04.flat.20221116.505594 \
@@ -82,11 +84,12 @@ python -m pyserini.search.lucene \
   --output ./datasets/robust04/runs/robust04.run-original-bm25-flat-1000.txt \
   --output-format trec \
   --hits 1000 --bm25 --remove-query
-
-```bash
-
+```
+Retrieved lists are stored in `./datasets/robust04/runs`.
 
 #### SPLADE++
+We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by SPLADE++ ("EnsembleDistil").
+Use the following commands to get SPLADE++ ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
 python -m pyserini.search.lucene \
@@ -106,8 +109,10 @@ python -m pyserini.search.lucene \
   --output ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
   --hits 1000 --impact
 ```
+Retrieved lists are stored in `./datasets/robust04/runs`.
 
 #### RepLLaMA
+Use the following commands to get RepLLaMA ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
 wget https://www.dropbox.com/scl/fi/byty1lk2um36imz0788yd/run.repllama.psg.dl19.txt?rlkey=615ootx2mia42cxdilp4tvqzh -O ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt
@@ -125,6 +130,7 @@ python -u format.py \
 --output_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --ranker_name repllama
 ```
+Retrieved lists are stored in `./datasets/robust04/runs`.
 
 ### Fetch re-ranked lists
 

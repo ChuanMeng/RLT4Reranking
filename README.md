@@ -29,6 +29,7 @@ For ease of reproducibility,
 #### MS MARCO V1 passage ranking
 Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 ```bash
+# queries
 mkdir datasets/msmarco-v1-passage/queries 
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2020-queries.tsv.gz
@@ -36,12 +37,14 @@ gzip -d ./datasets/msmarco-v1-passage/queries/*.tsv.gz
 mv ./datasets/msmarco-v1-passage/queries/msmarco-test2019-queries.tsv ./datasets/msmarco-v1-passage/queries/dl-19-passage.queries-original.tsv
 mv ./datasets/msmarco-v1-passage/queries/msmarco-test2020-queries.tsv ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv 
 
+# qrels
 mkdir datasets/msmarco-v1-passage/qrels
 wget -P ./datasets/msmarco-v1-passage/qrels/ ./datasets/msmarco-v1-passage/qrels https://trec.nist.gov/data/deep/2019qrels-pass.txt
 wget -P ./datasets/msmarco-v1-passage/qrels/ ./datasets/msmarco-v1-passage/qrels https://trec.nist.gov/data/deep/2020qrels-pass.txt
 mv ./datasets/msmarco-v1-passage/qrels/2019qrels-pass.txt ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt
 mv ./datasets/msmarco-v1-passage/qrels/2020qrels-pass.txt ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt
 
+# collection
 mkdir datasets/
 mkdir datasets/msmarco-v1-passage/ 
 mkdir datasets/msmarco-v1-passage/corpus  
@@ -55,9 +58,10 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 ```
 
 ### Fetch retrieved list
+We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++ ("EnsembleDistil").
+For RepLLaMA, we use the retrieved lists shared by the original author.
 
 #### BM25 
-We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25.
 Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
 ```bash
 # TREC-DL 19
@@ -87,7 +91,6 @@ python -m pyserini.search.lucene \
 ```
 
 #### SPLADE++
-We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by SPLADE++ ("EnsembleDistil").
 Use the following commands to get SPLADE++ ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -132,7 +135,7 @@ python -u format.py \
 ### Fetch re-ranked lists
 
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
-Use the following command to clone the source code of Tevatron: 
+We need the source code of Tevatron, so please first clone it: 
 
 ```bash
 git clone https://github.com/texttron/tevatron.git

@@ -430,8 +430,9 @@ python -u ./rlt/features.py \
 
 
 #### Generate features for BM25 ranking results
-
+Use the following commands to generate features for BM25 ranking results on 
 ```bash
+# TREC-DL 19
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -439,6 +440,7 @@ python -u ./rlt/features.py \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 --mode infer 
 
+# TREC-DL 20
 python -u ./rlt/document_features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -450,6 +452,7 @@ python -u ./rlt/document_features.py \
 #### Generate features for SPLADE++ ranking results
 
 ```bash
+# TREC-DL 19
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -457,6 +460,7 @@ python -u ./rlt/features.py \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 --mode infer 
 
+# TREC-DL 20
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -469,6 +473,7 @@ python -u ./rlt/features.py \
 
 
 ```bash
+# TREC-DL 19
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -476,6 +481,7 @@ python -u ./rlt/features.py \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 --mode infer 
 
+# TREC-DL 20
 python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
@@ -520,10 +526,10 @@ python -u ./rlt/embedding.py \
 
 #### Train and infer Bicut
 ```bash
-retrievers=("original-splade-pp-ed-pytorch-1000" "original-repllama-1000" "original-bm25-1000")
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 alphas=(0.4 0.5 0.6)
 
-# training on dl19, inference on dl20
+# train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for alpha in "${alphas[@]}"
@@ -559,8 +565,7 @@ do
 	done
 done
 
-# training on dl20, inference on d19
-
+# train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for alpha in "${alphas[@]}"
@@ -603,8 +608,7 @@ retrievers=("original-splade-pp-ed-pytorch-1000" "original-repllama-1000" "origi
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("choppy" "attncut" "mmoecut")
 
-# training on dl19 and inference on dl20
-
+# train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -645,7 +649,7 @@ do
 	done
 done
 
-# training on dl20 and inference on dl19
+# train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"

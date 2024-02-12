@@ -287,7 +287,7 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 #### BM25--MonoT5 
 We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
 Please first install [PyGaggle](https://github.com/castorini/pygaggle). Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
-Note that MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
+Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
 
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:
 ```bash
@@ -309,7 +309,13 @@ python -u monoT5.py \
 ```
 
 ### Training label generation 
+RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates.  
+Only considering the re-ranking quality would ignore efficiency.
+Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
+
+
 #### BM25--RankLLaMA
+Use the following 
 ```bash
 # TREC-DL 19
 python  -u rlt/reranking_labels.py \

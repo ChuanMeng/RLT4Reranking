@@ -58,7 +58,8 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 ```
 
 ### Fetch retrieved list
-We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++ ("EnsembleDistil").
+We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
+We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
 
 #### BM25 
@@ -134,11 +135,14 @@ python -u format.py \
 
 ### Fetch re-ranked lists
 
+We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
+We use 
 We need the source code of Tevatron, so please first clone it: 
 
 ```bash
 git clone https://github.com/texttron/tevatron.git
+mkdir ./datasets/msmarco-v1-passage/runs/rankllama_input/
 ```
 
 #### BM25--RankLLaMA 
@@ -282,6 +286,10 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 ```
 
 #### BM25--MonoT5 
+We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle).
+Note that MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
+
+Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
 python -u monoT5.py \

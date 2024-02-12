@@ -54,8 +54,6 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 
 ```
 
-```bash
-
 ### Fetch retrieved list
 
 #### BM25 

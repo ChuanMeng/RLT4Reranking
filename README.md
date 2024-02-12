@@ -131,12 +131,18 @@ python -u format.py \
 
 ### Fetch re-ranked lists
 
-#### BM25--RankLLaMA 
+We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
+Use the following command to clone the source code of Tevatron: 
 
-We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.  
+```bash
+git clone https://github.com/texttron/tevatron.git
+```
+
+#### BM25--RankLLaMA 
+Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -144,7 +150,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl19.1000.jsonl \
 --depth 1000
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
@@ -158,7 +164,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py 
 
 # TREC-DL 20
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl20 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -166,7 +172,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl20.1000.jsonl \
 --depth 1000
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
@@ -179,10 +185,11 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py 
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt
 ```
 
-#### SPLADE++--RankLLaMA 
+#### SPLADE++—-RankLLaMA 
+Use the following commands to use RankLLaMA to re-rank the retrieved list returned by SPLADE++ on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -190,7 +197,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
 --depth 1000
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
@@ -203,7 +210,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py 
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
 
 # TREC-DL 20
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl20 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -211,23 +218,25 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
 --depth 1000
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.msmarco-v1-passage-dev-small.run-original-splade-pp-ed-pytorch-1000.jsonl \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
   --p_max_len 164 \
+  --cache_dir /gpfs/work3/0/guse0654/cache/ \
   --dataset_name json \
-  --encoded_save_path ./datasets/msmarco-v1-passage/runs/msmarco-v1-passage-dev-small.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
 ```
 
 #### RepLLaMA--RankLLaMA 
+Use the following commands to use RankLLaMA to re-rank the retrieved list returned by RepLLaMA on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -235,7 +244,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path rerank_input.repllama.psg.dl19.200.jsonl \
 --depth 200
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
@@ -247,9 +256,8 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py 
   --dataset_name json \
   --encoded_save_path run.rankllama.psg.dl19.1000.txt
 
-
 # TREC-DL 20
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
@@ -257,7 +265,7 @@ python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py
 --output_path rerank_input.repllama.psg.dl19.1000.jsonl \
 --depth 1000
 
-python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \

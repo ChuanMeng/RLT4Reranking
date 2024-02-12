@@ -28,7 +28,7 @@ For ease of reproducibility,
 
 #### MS MARCO V1 passage ranking
 ```bash
-Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
+# Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 mkdir datasets/msmarco-v1-passage/queries 
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz
 wget -P ./datasets/msmarco-v1-passage/queries/ https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2020-queries.tsv.gz

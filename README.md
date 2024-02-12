@@ -85,7 +85,6 @@ python -m pyserini.search.lucene \
   --output-format trec \
   --hits 1000 --bm25 --remove-query
 ```
-Retrieved lists are stored in `./datasets/robust04/runs`.
 
 #### SPLADE++
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by SPLADE++ ("EnsembleDistil").
@@ -109,7 +108,6 @@ python -m pyserini.search.lucene \
   --output ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
   --hits 1000 --impact
 ```
-Retrieved lists are stored in `./datasets/robust04/runs`.
 
 #### RepLLaMA
 Use the following commands to get RepLLaMA ranking results on TREC-DL 19 and 20:
@@ -130,7 +128,6 @@ python -u format.py \
 --output_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --ranker_name repllama
 ```
-Retrieved lists are stored in `./datasets/robust04/runs`.
 
 ### Fetch re-ranked lists
 

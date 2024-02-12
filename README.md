@@ -61,7 +61,7 @@ tar -zxvf  ./datasets/msmarco-v1-passage/corpus/collection.tar.gz  -C ./datasets
 # TREC-DL 19
 python -m pyserini.search.lucene \
   --threads 16 --batch-size 128 \
-  --index msmarco-v1-passage-slim \
+  --index msmarco-v1-passage-full \
   --topics datasets/msmarco-v1-passage/queries/dl-19-passage.queries-original.tsv \
   --output datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
   --bm25 --k1 0.9 --b 0.4 --hits 1000
@@ -69,7 +69,7 @@ python -m pyserini.search.lucene \
 # TREC-DL 20
 python -m pyserini.search.lucene \
   --threads 16 --batch-size 128 \
-  --index msmarco-v1-passage-slim \
+  --index msmarco-v1-passage-full \
   --topics datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
   --output datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
   --bm25 --k1 0.9 --b 0.4 --hits 1000
@@ -101,51 +101,189 @@ python -m pyserini.search.lucene \
 python -m pyserini.search.lucene \
   --threads 16 --batch-size 128 \
   --index msmarco-v1-passage-splade-pp-ed \
-  --topics dl20 \
+  --topics ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
   --encoder naver/splade-cocondenser-ensembledistil \
-  --output run.msmarco-v1-passage.splade-pp-ed-pytorch.dl20.txt \
+  --output ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
   --hits 1000 --impact
 ```
 
 #### RepLLaMA
 ```bash
 # TREC-DL 19
-wget https://www.dropbox.com/scl/fi/byty1lk2um36imz0788yd/run.repllama.psg.dl19.txt?rlkey=615ootx2mia42cxdilp4tvqzh -O /datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt
+wget https://www.dropbox.com/scl/fi/byty1lk2um36imz0788yd/run.repllama.psg.dl19.txt?rlkey=615ootx2mia42cxdilp4tvqzh -O ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt
 
-python -u format \
---input_path /datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
---output_path /datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
---ranker_name
+python -u format.py \
+--input_path ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
+--ranker_name repllama
 
 # TREC-DL 20
-wget https://www.dropbox.com/scl/fi/drgg9vj8mxe3qwayggj9o/run.repllama.psg.dl20.txt?rlkey=22quuq5wzvn6ip0c5ml6ad5cs -O /datasets/msmarco-v1-passage/runs/run.repllama.psg.dl20.txt
+wget https://www.dropbox.com/scl/fi/drgg9vj8mxe3qwayggj9o/run.repllama.psg.dl20.txt?rlkey=22quuq5wzvn6ip0c5ml6ad5cs -O ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl20.txt
 
-python -u format \
---input_path /datasets/msmarco-v1-passage/runs/run.repllama.psg.dl20.txt \
---output_path /datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
---ranker_name
+python -u format.py \
+--input_path ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl20.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
+--ranker_name repllama
 ```
 
 ### Fetch re-ranked lists
 
 #### BM25--RankLLaMA 
-```bash
 
+We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.  
+```bash
+# TREC-DL 19
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl19 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl19.1000.jsonl \
+--depth 1000
+
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl19.1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-rankllama-1000.txt
+
+# TREC-DL 20
+
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl20 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl20.1000.jsonl \
+--depth 1000
+
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.bm25.psg.dl20.1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt
 ```
 
 #### SPLADE++--RankLLaMA 
 ```bash
+# TREC-DL 19
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl19 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
+--depth 1000
 
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
+
+# TREC-DL 20
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl20 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-splade-pp-ed-pytorch-1000.jsonl \
+--depth 1000
+
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.msmarco-v1-passage-dev-small.run-original-splade-pp-ed-pytorch-1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/msmarco-v1-passage-dev-small.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
 ```
 
 #### RepLLaMA--RankLLaMA 
 ```bash
+# TREC-DL 19
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl19 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results ./datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
+--output_path rerank_input.repllama.psg.dl19.200.jsonl \
+--depth 200
 
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path rerank_input.repllama.psg.dl19.1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path run.rankllama.psg.dl19.1000.txt
+
+
+# TREC-DL 20
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_data_name Tevatron/msmarco-passage \
+--query_data_split dl19 \
+--corpus_data_name Tevatron/msmarco-passage-corpus \
+--retrieval_results /gpfs/work3/0/guse0654/QPP/datasets/msmarco-v1-passage/runs/run.repllama.psg.dl19.txt \
+--output_path rerank_input.repllama.psg.dl19.1000.jsonl \
+--depth 1000
+
+python /gpfs/work3/0/guse0654/tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path rerank_input.repllama.psg.dl20.1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path run.rankllama.psg.dl20.1000.txt
 ```
 
 #### BM25--MonoT5 
 ```bash
+# TREC-DL 19
+python -u monoT5.py \
+--query_path  ./datasets/msmarco-v1-passage/queries/dl-19-passage.queries-original.tsv \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--index_path msmarco-v1-passage-full \
+--model castorini/monot5-base-msmarco \
+--k 1000
 
+# TREC-DL 20
+python -u monoT5.py \
+--query_path  ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--index_path msmarco-v1-passage-full \
+--model castorini/monot5-base-msmarco \
+--k 1000
 ```
 
 ### Training label generation 

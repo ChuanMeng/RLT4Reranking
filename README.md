@@ -170,7 +170,6 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-rankllama-1000.txt
 
 # TREC-DL 20
-
 python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl20 \
@@ -286,7 +285,8 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 ```
 
 #### BM25--MonoT5 
-We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle).
+We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
+Please first install [PyGaggle](https://github.com/castorini/pygaggle). Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
 Note that MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
 
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:

@@ -4,16 +4,16 @@ Supplementary materials for the paper titled "_Ranked List Truncation: From Retr
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
 This repository is structured into five distinct parts:
-1. Prerequisites
-2. Data preparation
-   - 2.1 Download raw data
-   - 2.2 Obtain retrieved lists
-   - 2.3 Obtain re-ranked lists
-   - 2.4 Training label generation
-   - 2.5 Feature generation
-3. Unsupervised RLT methods
-4. Supervised RLT methods
-5  Evaluation
+* 1. Prerequisites
+* 2. Data preparation
+   * 2.1 Download raw data
+   * 2.2 Obtain retrieved lists
+   * 2.3 Obtain re-ranked lists
+   * 2.4 Training label generation
+   * 2.5 Feature generation
+* 3. Unsupervised RLT methods
+* 4. Supervised RLT methods
+* 5. Evaluation
 
 Note that for ease of reproducibility,
 

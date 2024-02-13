@@ -564,12 +564,10 @@ Inference outputs would be stored in the `./output/{retriever name}` directory; 
 We recommend using GPU to execute all commands in this section.
 
 ### 4.1 Train and infer BiCut
-For BiCut, "alpha" here is "η" in the paper.
-We call "alpha" as η in the paper.
 Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
-alphas=(0.4 0.5 0.6)
+alphas=(0.4 0.5 0.6) # the symbol "alpha" used here corresponds to "η" as denoted in the paper.
 
 # train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
@@ -645,6 +643,7 @@ done
 ```
 
 #### 4.2 Train and infer Choppy, AttnCut and MtCut 
+Run the following commands to train Choppy, AttnCut and MtCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000" )
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
@@ -732,6 +731,7 @@ done
 ```
 
 #### 4.3 Train and infer LeCut
+Run the following commands to train LeCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
@@ -775,7 +775,6 @@ do
 		done
 	done
 done
-
 
 # train a model on dl20, and infer it on dl19
 for retriever in "${retrievers[@]}"

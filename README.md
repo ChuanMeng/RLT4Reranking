@@ -316,7 +316,7 @@ EET has two hypeparamters, i.e., \alpha and \beta. We consider \alpha=-0.001, an
 Please first create the folder where label files would be produced.
 ```bash
 mkdir datasets/msmarco-v1-passage/labels
-```bash
+```
 
 #### BM25--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
@@ -338,7 +338,7 @@ python -u rlt/reranking_labels.py \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
-```bash
+```
 
 #### SPLADE++--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:

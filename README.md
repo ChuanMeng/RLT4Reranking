@@ -6,6 +6,11 @@ In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods
 This repository is structured into five distinct parts:
 1. Prerequisites
 2. Data preparation,
+2.1 Download raw data
+2.2 Obtain retrieved lists
+2.3 Obtain re-ranked lists
+2.4 Training label generation
+2.5 Feature generation
 3. Unsupervised RLT methods,
 5. Supervised RLT methods,
 6  Evaluation
@@ -57,7 +62,7 @@ We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
 
-#### BM25 
+#### 2.2.1 BM25 
 Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
 ```bash
 # TREC-DL 19
@@ -86,7 +91,7 @@ python -m pyserini.search.lucene \
   --hits 1000 --bm25 --remove-query
 ```
 
-#### SPLADE++
+#### 2.2.2 SPLADE++
 Use the following commands to get SPLADE++ ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -108,7 +113,7 @@ python -m pyserini.search.lucene \
   --hits 1000 --impact
 ```
 
-#### RepLLaMA
+#### 2.2.3 RepLLaMA
 Use the following commands to get RepLLaMA ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -141,7 +146,7 @@ cd ..
 
 Note that we recommend using GPU to execute all commands in this section.
 
-#### BM25--RankLLaMA 
+#### 2.3.1 BM25--RankLLaMA 
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19 
@@ -189,7 +194,7 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 # Robust04
 ```
 
-#### SPLADE++—-RankLLaMA 
+#### 2.3.2 SPLADE++—-RankLLaMA 
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by SPLADE++ on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -236,7 +241,7 @@ python ./tevatron/examples/rankllama/reranker_inference.py \
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt
 ```
 
-#### RepLLaMA--RankLLaMA 
+#### 2.3.3 RepLLaMA--RankLLaMA 
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by RepLLaMA on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -282,7 +287,7 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt
 ```
 
-#### BM25--MonoT5 
+#### 2.3.4 BM25--MonoT5 
 We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
 Please first install [PyGaggle](https://github.com/castorini/pygaggle). 
 Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
@@ -321,7 +326,7 @@ Please first create the folder where label files would be produced.
 mkdir datasets/msmarco-v1-passage/labels
 ```
 
-#### BM25--RankLLaMA
+#### 2.4.1 BM25--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -345,7 +350,7 @@ python -u rlt/reranking_labels.py \
 # Robust04
 ```
 
-#### SPLADE++--RankLLaMA
+#### 2.4.2 SPLADE++--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -367,7 +372,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 ```
 
-#### RepLLaMA--RankLLaMA
+#### 2.4.3 RepLLaMA--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 python -u rlt/reranking_labels.py \
@@ -387,7 +392,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 ```
 
-#### BM25--MonoT5
+#### 2.4.4 BM25--MonoT5
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 python -u rlt/reranking_labels.py \
@@ -415,7 +420,7 @@ Please first create the folder where feature files would be produced.
 mkdir datasets/msmarco-v1-passage/features
 ```
 
-#### Build tf-idf models for collections:
+#### 2.5.1 Build tf-idf models for collections:
 
 Use the following commands to build tf-idf models for MS MARCO V1 passage ranking and Robust04 collections:
 ```bash
@@ -428,7 +433,7 @@ python -u ./rlt/features.py \
 # Robust04
 ```
 
-#### Build doc2vec models for collections:
+#### 2.5.2 Build doc2vec models for collections:
 Use the following commands to train doc2vec models for MS MARCO V1 passage ranking and Robust04 collections:
 ```bash
 # MS MARCO V1 passage ranking
@@ -439,7 +444,7 @@ python -u ./rlt/features.py \
 
 # Robust04
 ```
-#### Generate features for BM25 ranking results
+#### 2.5.3 Generate features for BM25 ranking results
 Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
@@ -461,7 +466,7 @@ python -u ./rlt/document_features.py \
 # Robust04
 ```
 
-#### Generate features for SPLADE++ ranking results
+#### 2.5.4 Generate features for SPLADE++ ranking results
 Use the following commands to generate features for SPLADE++ ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -481,7 +486,7 @@ python -u ./rlt/features.py \
 --mode infer
 ``` 
 
-#### Generate features for RepLLaMA ranking results
+#### 2.5.5 Generate features for RepLLaMA ranking results
 Use the following commands to generate features for RepLLaMA ranking results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19

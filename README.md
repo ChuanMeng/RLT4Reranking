@@ -14,7 +14,9 @@ This repository is structured into five distinct parts:
 3. Reproducing results
    * 3.1 Unsupervised RLT methods
    * 3.2 Supervised RLT methods
-4. Evaluation
+   # 3.3 Evaluation
+4. Reproducing plots
+
 
 Note that for ease of reproducibility,
 
@@ -929,5 +931,84 @@ do
 	done
 done
 ```
+### 3.3 Evaluation
 
-## 4. Evaluation
+Using the following commands to evaluate RLT methods w.r.t the pipeline of BM25--RankLLaMA:
+```bash
+# TREC-DL 19
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-bm25-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--binarise_qrels
+
+# TREC-DL 20
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-bm25-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--binarise_qrels
+```
+
+Using the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
+```bash
+# TREC-DL 19
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-19-passage.original-repllama-1000/dl-19-passage.original-repllama-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--binarise_qrels
+
+# TREC-DL 20
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-20-passage.original-repllama-1000/dl-20-passage.original-repllama-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--binarise_qrels
+```
+
+Using the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
+```bash
+# TREC-DL 19
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-19-passage.original-splade-pp-ed-pytorch-1000/dl-19-passage.original-splade-pp-ed-pytorch-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-splade-pp-ed-pytorch-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--binarise_qrels
+
+# TREC-DL 20
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-20-passage.original-splade-pp-ed-pytorch-1000/dl-20-passage.original-splade-pp-ed-pytorch-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-splade-pp-ed-pytorch-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--binarise_qrels
+```
+
+Using the following commands to evaluate RLT methods w.r.t the pipeline of BM25--MonoT5:
+```bash
+# TREC-DL 19
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-bm25-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--binarise_qrels
+
+# TREC-DL 20
+python -u ./rlt/evaluation.py \
+--pattern './output_rlt/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-bm25-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--binarise_qrels
+```
+
+4. Reproducing plots
+
+

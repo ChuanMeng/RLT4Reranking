@@ -612,6 +612,7 @@ do
 	--output_path ./output
 	done	
 done
+```
 
 #### 3.1.3 Surprise
 Note that Surprise only depends on retrieval scores and uses a score threshold to truncate a ranked list; Suprise cannot be tuned for re-rankers because the score threshold is set based on Cramer-von-Mises statistic testings and the threshold is not a tunable hyperparameter.

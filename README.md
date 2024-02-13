@@ -140,7 +140,7 @@ pip install --editable .
 cd ..
 ```
 
-Note that we recommend using GPU to execute the following commands.
+Note that we recommend using GPU to execute all commands in this section.
 
 #### BM25--RankLLaMA 
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20:
@@ -186,6 +186,8 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --p_max_len 164 \
   --dataset_name json \
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt
+
+# Robust04
 ```
 
 #### SPLADE++—-RankLLaMA 
@@ -304,6 +306,8 @@ python -u monoT5.py \
 --index_path msmarco-v1-passage-full \
 --model castorini/monot5-base-msmarco \
 --k 1000
+
+# Robust04
 ```
 
 ### Training label generation 
@@ -311,7 +315,7 @@ RLT methods (especially supervised ones) need the re-ranking quality in terms of
 However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
 
-EET has two hypeparamters, i.e., \alpha and \beta. We consider \alpha=-0.001, and \beta=0, 1 and 2.
+EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0, 1 and 2.
 
 Please first create the folder where label files would be produced.
 ```bash
@@ -338,6 +342,8 @@ python -u rlt/reranking_labels.py \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
+
+# Robust04
 ```
 
 #### SPLADE++--RankLLaMA
@@ -449,7 +455,6 @@ python -u ./rlt/document_features.py \
 --mode infer 
 
 # Robust04
-
 ```
 
 #### Generate features for SPLADE++ ranking results
@@ -530,7 +535,7 @@ python -u ./rlt/embedding.py \
 
 Note that we recommend using GPU to execute the following commands.
 #### Train and infer Bicut
-Note that we call "alpha" as \eta in the paper.
+Note that we call "alpha" as η in the paper.
 
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
@@ -702,7 +707,7 @@ retrievers=("original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("lecut")
 
-# training on dl19 and inference on dl20
+# train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -713,7 +718,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint_rlt/ \
-		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever}.embed-repllama.json \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 		--epoch_num 100 \
@@ -726,7 +731,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint_rlt/ \
-		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever}.embed-repllama.json \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 		--epoch_num 100 \
@@ -742,7 +747,7 @@ do
 done
 
 
-# training on dl20 and inference on dl19
+# train a model on dl20, and infer it on dl19
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -753,7 +758,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint_rlt/ \
-		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-20-passage.feature-${retriever}.embed-repllama.json \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 		--epoch_num 100 \
@@ -766,7 +771,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint_rlt/ \
-		--feature_path ./datasets/msmarco-v1-passage/statistics/dl-19-passage.feature-${retriever}.embed-repllama.json \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 		--epoch_num 100 \
@@ -780,7 +785,6 @@ do
 		done
 	done
 done
-
 ```
 
 ## 4. Evaluation

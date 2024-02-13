@@ -1005,7 +1005,7 @@ python -u ./evaluation.py \
 --binarise_qrels
 ```
 
-4. Reproducing plots
+## 4. Reproducing plots
 Run `plots.ipynb` can recreate all plots represented in the paper.
 The recreated plots would be stored in the `./plots` directory.
 

@@ -593,7 +593,7 @@ do
 	for metric in "${metrics[@]}"
 	do
 	python -u ./unsupervised_rlt.py \
-	--name greedy \ 
+	--name greedy \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 	--output_path ./output
@@ -606,9 +606,9 @@ do
 	for metric in "${metrics[@]}"
 	do
 	python -u ./unsupervised_rlt.py \
-	--name greedy \ 
+	--name greedy \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
-	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.{metric}.json \
+	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 	--output_path ./output
 	done	
 done
@@ -637,7 +637,6 @@ python -u ./unsupervised_rlt.py \
 --output_path ./output
 done
 ```
-
 
 #### 3.1.4 Oracle
 Run the following commands to perform Oracle on TREC-DL 19 and 20:
@@ -669,7 +668,6 @@ do
 	done
 done
 ```
-
  
 ### 3.2. Supervised RLT methods
 We consider 5 supervised methods, i.e., [BiCut](https://dl.acm.org/doi/abs/10.1145/3341981.3344234), [Choppy](https://dl.acm.org/doi/10.1145/3397271.3401188), [AttnCut](https://ojs.aaai.org/index.php/AAAI/article/view/16572), [MtCut](https://dl.acm.org/doi/abs/10.1145/3488560.3498466) and [LeCut](https://dl.acm.org/doi/abs/10.1145/3477495.3531998).

@@ -27,8 +27,9 @@ pip install -r requirements.txt
 For ease of reproducibility, 
 
 ### 2.1 Download raw data
+All raw data would be stored in the `./datesets` directory.
 
-#### MS MARCO V1 passage ranking
+#### 2.1.1 MS MARCO V1 passage ranking
 Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 ```bash
 # queries
@@ -52,15 +53,21 @@ mkdir datasets/msmarco-v1-passage/
 mkdir datasets/msmarco-v1-passage/collection
 wget -P ./datasets/msmarco-v1-passage/collection/ https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz --no-check-certificate
 tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./datasets/msmarco-v1-passage/collection/
-
-#### Robust04
- 
 ```
+
+#### 2.1.2 Robust04
+```bash
+mkdir datasets/robust04/
+```
+ 
+
 
 ### 2.2 Obtain retrieved lists
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
+
+All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or 'datasets/robust04/runs'.
 
 #### 2.2.1 BM25 
 Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
@@ -143,6 +150,7 @@ cd tevatron
 pip install --editable .
 cd ..
 ```
+All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or 'datasets/robust04/runs'.
 
 Note that we recommend using GPU to execute all commands in this section.
 
@@ -324,6 +332,7 @@ EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0, 1 a
 Please first create the folder where label files would be produced.
 ```bash
 mkdir datasets/msmarco-v1-passage/labels
+mkdir datasets/robust04/labels
 ```
 
 #### 2.4.1 BM25--RankLLaMA
@@ -413,11 +422,12 @@ python -u rlt/reranking_labels.py \
 ```
 
 ### 2.5 Feature generation
-We need to first build tf-idf and doc2vec models for collections, and then infer features for retrieved lists.
+We need first to build tf-idf and doc2vec models for collections, and then to infer features for retrieved lists.
 
 Please first create the folder where feature files would be produced.
 ```bash
 mkdir datasets/msmarco-v1-passage/features
+mkdir datasets/robust04/features
 ```
 
 #### 2.5.1 Build tf-idf models for collections:
@@ -564,7 +574,7 @@ do
 	# training
 	python -u ./rlt/main.py \
 	--name bicut \
-	--checkpoint_path ./checkpoint_rlt/ \
+	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 	--epoch_num 100 \
@@ -577,7 +587,7 @@ do
 	#inference
 	python -u ./rlt/main.py \
 	--name bicut \
-	--checkpoint_path ./checkpoint_rlt/ \
+	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 	--epoch_num 100 \
@@ -587,7 +597,7 @@ do
 	--batch_size 64 \
 	--binarise_qrels \
 	--checkpoint_name dl-19-passage.${retriever}.bicut.alpha${alpha} \
-	--output_path ./output_rlt \
+	--output_path ./output \
 	--infer
 	done
 done
@@ -600,7 +610,7 @@ do
 	# training
 	python -u ./rlt/main.py \
 	--name bicut \
-	--checkpoint_path ./checkpoint_rlt/ \
+	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 	--epoch_num 100 \
@@ -613,7 +623,7 @@ do
 	# inference
 	python -u ./rlt/main.py \
 	--name bicut \
-	--checkpoint_path ./checkpoint_rlt/ \
+	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 	--epoch_num 100 \
@@ -623,7 +633,7 @@ do
 	--batch_size 64 \
 	--binarise_qrels \
 	--checkpoint_name dl-20-passage.${retriever}.bicut.alpha${alpha} \
-	--output_path ./output_rlt \
+	--output_path ./output \
 	--infer
 	done
 done
@@ -646,7 +656,7 @@ do
 		# training
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -659,7 +669,7 @@ do
 		# inference
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -669,7 +679,7 @@ do
 		--batch_size 64 \
 		--binarise_qrels \
 		--checkpoint_name dl-19-passage.${retriever}.${model}.${metric} \
-		--output_path ./output_rlt \
+		--output_path ./output \
 		--infer
 
 		done
@@ -686,7 +696,7 @@ do
 		# training
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -699,7 +709,7 @@ do
 		# inference
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -709,7 +719,7 @@ do
 		--batch_size 64 \
 		--binarise_qrels \
 		--checkpoint_name dl-20-passage.${retriever}.${model}.${metric} \
-		--output_path ./output_rlt \
+		--output_path ./output \
 		--infer
 		done
 	done
@@ -732,7 +742,7 @@ do
 		# training
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -745,7 +755,7 @@ do
 		# inference
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -755,7 +765,7 @@ do
 		--batch_size 64 \
 		--binarise_qrels \
 		--checkpoint_name dl-19-passage.${retriever}.${model}-embed-repllama.${metric} \
-		--output_path ./output_rlt \
+		--output_path ./output \
 		--infer
 		done
 	done
@@ -772,7 +782,7 @@ do
 		# training
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -785,7 +795,7 @@ do
 		# inference
 		python -u ./rlt/main.py \
 		--name ${model} \
-		--checkpoint_path ./checkpoint_rlt/ \
+		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -795,7 +805,7 @@ do
 		--batch_size 64 \
 		--binarise_qrels \
 		--checkpoint_name dl-20-passage.${retriever}.${model}-embed-repllama.${metric} \
-		--output_path ./output_rlt \
+		--output_path ./output \
 		--infer
 		done
 	done

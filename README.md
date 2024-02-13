@@ -933,7 +933,7 @@ done
 ```
 ### 3.3 Evaluation
 
-Using the following commands to evaluate RLT methods w.r.t the pipeline of BM25--RankLLaMA:
+Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--RankLLaMA:
 ```bash
 # TREC-DL 19
 python -u ./rlt/evaluation.py \
@@ -952,7 +952,7 @@ python -u ./rlt/evaluation.py \
 --binarise_qrels
 ```
 
-Using the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
+Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
 ```bash
 # TREC-DL 19
 python -u ./rlt/evaluation.py \
@@ -971,7 +971,7 @@ python -u ./rlt/evaluation.py \
 --binarise_qrels
 ```
 
-Using the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
+Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
 ```bash
 # TREC-DL 19
 python -u ./rlt/evaluation.py \
@@ -990,7 +990,7 @@ python -u ./rlt/evaluation.py \
 --binarise_qrels
 ```
 
-Using the following commands to evaluate RLT methods w.r.t the pipeline of BM25--MonoT5:
+Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--MonoT5:
 ```bash
 # TREC-DL 19
 python -u ./rlt/evaluation.py \

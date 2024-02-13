@@ -283,7 +283,8 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 
 #### BM25--MonoT5 
 We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
-Please first install [PyGaggle](https://github.com/castorini/pygaggle). Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
+Please first install [PyGaggle](https://github.com/castorini/pygaggle). 
+Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
 Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
 
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:
@@ -473,10 +474,6 @@ python -u ./rlt/features.py \
 
 #### Generate features for RepLLaMA ranking results
 Use the following commands to generate features for RepLLaMA ranking results on TREC-DL 19 and 20:
-
-#### Fetch embedding from RepLLaMA
-
-
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
@@ -495,8 +492,8 @@ python -u ./rlt/features.py \
 --mode infer 
 ```
 Note that the supervised RLT method LeCut needs to be fed with the query-item embeddings from the given neural retriever.
-We need to fetch embeddings from RepLLaMA
- we recommend using GPU to execute the following commands.
+We need to fetch embeddings from RepLLaMA and merge the embeddings with the features generated in the above step.
+we recommend using GPU to execute the following commands:
 ```bash
 # TREC-DL 19
 python -u ./rlt/embedding.py \

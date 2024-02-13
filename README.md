@@ -559,14 +559,14 @@ We also consider Oracle here.
 We consider 5 supervised methods, i.e., [BiCut](https://dl.acm.org/doi/abs/10.1145/3341981.3344234), [Choppy](https://dl.acm.org/doi/10.1145/3397271.3401188), [AttnCut](https://ojs.aaai.org/index.php/AAAI/article/view/16572), [MtCut](https://dl.acm.org/doi/abs/10.1145/3488560.3498466) and [LeCut](https://dl.acm.org/doi/abs/10.1145/3477495.3531998).
 
 All checkpoints would be stored in the `./checkpoint` directory.
-Inference outputs would be stored in the `./output/{retriever name}` directory; an output file has lines that have an equal number of queries in a test set; each line is composed of "query id\tpredicted cut-off".
+Inference outputs would be stored in the `./output/{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
 
 We recommend using GPU to execute all commands in this section.
 
 ### 4.1 Train and infer BiCut
 For BiCut, "alpha" here is "η" in the paper.
 We call "alpha" as η in the paper.
-
+Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 alphas=(0.4 0.5 0.6)

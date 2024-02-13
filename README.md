@@ -11,9 +11,10 @@ This repository is structured into five distinct parts:
    * 2.3 Obtain re-ranked lists
    * 2.4 Training label generation
    * 2.5 Feature generation
-3. Unsupervised RLT methods
-4. Supervised RLT methods
-5. Evaluation
+3. Reproducing results
+   * 3.1 Unsupervised RLT methods
+   * 3.2 Supervised RLT methods
+4. Evaluation
 
 Note that for ease of reproducibility,
 
@@ -546,24 +547,28 @@ python -u ./rlt/embedding.py \
 --p_max_len=512
 ```
 
-## 3. Unsupervised RLT methods
+## 3. Reproducing results
+
+All checkpoints would be stored in the `./checkpoint` directory.
+Inference outputs would be stored in the `./output/{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
+
+###  3.1 Unsupervised RLT methods
 We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://dl.acm.org/doi/abs/10.1145/3539618.3592066).
 We also consider Oracle here.
+
+
 ```bash
 
 ```
 
  
 
-## 4. Supervised RLT methods
+### 3.2. Supervised RLT methods
 We consider 5 supervised methods, i.e., [BiCut](https://dl.acm.org/doi/abs/10.1145/3341981.3344234), [Choppy](https://dl.acm.org/doi/10.1145/3397271.3401188), [AttnCut](https://ojs.aaai.org/index.php/AAAI/article/view/16572), [MtCut](https://dl.acm.org/doi/abs/10.1145/3488560.3498466) and [LeCut](https://dl.acm.org/doi/abs/10.1145/3477495.3531998).
-
-All checkpoints would be stored in the `./checkpoint` directory.
-Inference outputs would be stored in the `./output/{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
 
 We recommend using GPU to execute all commands in this section.
 
-### 4.1 Train and infer BiCut
+### 3.2.1 Train and infer BiCut
 Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
@@ -642,7 +647,7 @@ do
 done
 ```
 
-#### 4.2 Train and infer Choppy, AttnCut and MtCut 
+#### 3.2.2 Train and infer Choppy, AttnCut and MtCut 
 Run the following commands to train Choppy, AttnCut and MtCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000" )
@@ -730,7 +735,7 @@ do
 done
 ```
 
-#### 4.3 Train and infer LeCut
+#### 3.2.3 Train and infer LeCut
 Run the following commands to train LeCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-repllama-1000")

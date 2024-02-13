@@ -2,7 +2,7 @@
 Supplementary materials for the paper titled "_Ranked List Truncation: From Retrieval to Re-ranking_". 
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
-**This repository allows to facilitates the replication of all result numbers and the recreation of all visual plots presented in the paper**.
+**This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**.
 
 This repository is structured into five distinct parts:
 1. Prerequisites
@@ -953,25 +953,6 @@ python -u ./evaluation.py \
 --binarise_qrels
 ```
 
-Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
-```bash
-# TREC-DL 19
-python -u ./evaluation.py \
---pattern './output/dl-19-passage.original-repllama-1000/dl-19-passage.original-repllama-1000.*' \
---reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---binarise_qrels
-
-# TREC-DL 20
-python -u ./evaluation.py \
---pattern './output/dl-20-passage.original-repllama-1000/dl-20-passage.original-repllama-1000.*' \
---reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---binarise_qrels
-```
-
 Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
 ```bash
 # TREC-DL 19
@@ -987,6 +968,25 @@ python -u ./evaluation.py \
 --pattern './output/dl-20-passage.original-splade-pp-ed-pytorch-1000/dl-20-passage.original-splade-pp-ed-pytorch-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-splade-pp-ed-pytorch-1000.json \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--binarise_qrels
+```
+
+Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
+```bash
+# TREC-DL 19
+python -u ./evaluation.py \
+--pattern './output/dl-19-passage.original-repllama-1000/dl-19-passage.original-repllama-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000.json \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--binarise_qrels
+
+# TREC-DL 20
+python -u ./evaluation.py \
+--pattern './output/dl-20-passage.original-repllama-1000/dl-20-passage.original-repllama-1000.*' \
+--reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000.json \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 --binarise_qrels
 ```

@@ -556,19 +556,67 @@ Inference outputs would be stored in the `./output/{retriever name}` directory; 
 We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://dl.acm.org/doi/abs/10.1145/3539618.3592066).
 We also consider Oracle here.
 
-
+#### 3.1.1 Fixed-k
 ```bash
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 
+for retriever in "${retrievers[@]}"
+do
+python -u ./unsupervised_rlt.py \
+--name fixed \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
+--output_path ./output
+done
+
+for retriever in "${retrievers[@]}"
+do
+
+python -u ./unsupervised_rlt.py \
+--name fixed \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
+--output_path ./output
+done
+```
+
+#### 3.1.2 Greedy-k
+
+
+#### 3.1.3 Suprise
+
+
+#### 3.1.4 Oracle
+```bash
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
+metrics=("rankllama-1000-ndcg@10 "monot5-1000-ndcg@10")
+
+for retriever in "${retrievers[@]}"
+do
+
+python -u ./unsupervised_rlt.py \
+--name oracle \
+--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.rankllama-1000-ndcg@10.json \
+--output_path ./output
+done
+
+for retriever in "${retrievers[@]}"
+do
+
+python -u ./unsupervised_rlt.py \
+--name oracle \
+--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.rankllama-1000-ndcg@10.json \
+--output_path ./output
+done
 ```
 
  
-
 ### 3.2. Supervised RLT methods
 We consider 5 supervised methods, i.e., [BiCut](https://dl.acm.org/doi/abs/10.1145/3341981.3344234), [Choppy](https://dl.acm.org/doi/10.1145/3397271.3401188), [AttnCut](https://ojs.aaai.org/index.php/AAAI/article/view/16572), [MtCut](https://dl.acm.org/doi/abs/10.1145/3488560.3498466) and [LeCut](https://dl.acm.org/doi/abs/10.1145/3477495.3531998).
 
 We recommend using GPU to execute all commands in this section.
 
 ### 3.2.1 Train and infer BiCut
+Note that the training of BiCut is independent of re-ranking. 
+As shown in our paper, BiCut uses a hyperparameter "η" to control trade-offs between effectiveness and efficiency.
 Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
@@ -583,7 +631,7 @@ do
 	python -u ./rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
-	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 	--epoch_num 100 \
 	--alpha ${alpha} \
@@ -596,7 +644,7 @@ do
 	python -u ./rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
-	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 	--epoch_num 100 \
 	--alpha ${alpha} \
@@ -619,7 +667,7 @@ do
 	python -u ./rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
-	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 	--epoch_num 100 \
 	--alpha ${alpha} \
@@ -632,7 +680,7 @@ do
 	python -u ./rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
-	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 	--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 	--epoch_num 100 \
 	--alpha ${alpha} \
@@ -651,22 +699,21 @@ done
 Run the following commands to train Choppy, AttnCut and MtCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000" )
-metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
+metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2" "monot5-1000-ndcg@10-eet-alpha-0.001-beta0" "monot5-1000-ndcg@10-eet-alpha-0.001-beta1" "monot5-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("choppy" "attncut" "mmoecut")
 
 # train a model on dl19, and infer it on dl20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
-	do 
-
+	do
 		for model in "${models[@]}"
 		do
 		# training
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
-		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 		--epoch_num 100 \
@@ -679,7 +726,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
-		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 		--epoch_num 100 \
@@ -706,7 +753,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
-		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever} \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 		--epoch_num 100 \
@@ -719,7 +766,7 @@ do
 		python -u ./rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
-		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever} \
+		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 		--label_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 		--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
 		--epoch_num 100 \
@@ -736,6 +783,7 @@ done
 ```
 
 #### 3.2.3 Train and infer LeCut
+Note that LeCut can only work for RepLLaMA.
 Run the following commands to train LeCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
 ```bash
 retrievers=("original-repllama-1000")

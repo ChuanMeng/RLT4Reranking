@@ -2,7 +2,7 @@
 Supplementary materials for the paper titled "_Ranked List Truncation: From Retrieval to Re-ranking_". 
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
-**This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**.
+**This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
 
 This repository is structured into five distinct parts:
 1. Prerequisites
@@ -15,7 +15,7 @@ This repository is structured into five distinct parts:
 3. Reproducing results
    * 3.1 Unsupervised RLT methods
    * 3.2 Supervised RLT methods
-   # 3.3 Evaluation
+   * 3.3 Evaluation
 4. Reproducing plots
 
 

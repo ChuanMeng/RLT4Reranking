@@ -1010,5 +1010,6 @@ python -u ./evaluation.py \
 ```
 
 4. Reproducing plots
-
+Run `plots.ipynb` can recreate all plots represented in the paper.
+The recreated plots would be stored in the `./plots` directory.
 

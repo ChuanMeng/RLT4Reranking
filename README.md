@@ -136,11 +136,12 @@ python -u format.py \
 ### Obtain re-ranked lists
 We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
-We need the source code of Tevatron, so please first clone it: 
-
+We already put the source code of [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) in the current directory.
+So please install [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) by its source code:
 ```bash
-git clone https://github.com/texttron/tevatron.git
-mkdir ./datasets/msmarco-v1-passage/runs/rankllama_input/
+cd tevatron
+pip install --editable .
+cd ..
 ```
 
 #### BM25--RankLLaMA 
@@ -245,20 +246,20 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_split dl19 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
 --retrieval_results ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
---output_path rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
 --depth 1000
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-19-passage.run-original-repllama-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
   --p_max_len 164 \
   --dataset_name json \
-  --encoded_save_path dl-19-passage.run-original-repllama-1000-rankllama-1000.txt
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000-rankllama-1000.txt
 
 # TREC-DL 20
 python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
@@ -266,20 +267,20 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_split dl20 \
 --corpus_data_name Tevatron/msmarco-passage-corpus \
 --retrieval_results ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
---output_path rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
+--output_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
 --depth 1000
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
+  --encode_in_path ./datasets/msmarco-v1-passage/runs/rankllama_input/rerank_input.dl-20-passage.run-original-repllama-1000.jsonl \
   --fp16 \
   --per_device_eval_batch_size 64 \
   --q_max_len 32 \
   --p_max_len 164 \
   --dataset_name json \
-  --encoded_save_path dl-20-passage.run-original-repllama-1000-rankllama-1000.txt
+  --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt
 ```
 
 #### BM25--MonoT5 
@@ -311,12 +312,14 @@ RLT methods (especially supervised ones) need the re-ranking quality in terms of
 However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
 
+EET has two hypeparamters, i.e., \alpha and \beta. We consider \alpha=-0.001, and \beta=0, 1 and 2.
+
 
 #### BM25--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -325,21 +328,20 @@ python  -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
-
 ```
 
 #### SPLADE++--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -348,7 +350,7 @@ python  -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -360,7 +362,7 @@ python  -u rlt/reranking_labels.py \
 #### RepLLaMA--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -368,7 +370,7 @@ python  -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -380,7 +382,7 @@ python  -u rlt/reranking_labels.py \
 #### BM25--MonoT5
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-monot5-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -388,7 +390,7 @@ python  -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 
-python  -u rlt/reranking_labels.py \
+python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-monot5-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -426,9 +428,6 @@ python -u ./rlt/features.py \
 
 
 ```
-#### Fetch embedding from RepLLaMA
-
-
 #### Generate features for BM25 ranking results
 Use the following commands to generate features for BM25 ranking results on 
 ```bash
@@ -471,6 +470,7 @@ python -u ./rlt/features.py \
 
 #### Generate features for RepLLaMA ranking results
 
+#### Fetch embedding from RepLLaMA
 
 ```bash
 # TREC-DL 19
@@ -525,6 +525,8 @@ python -u ./rlt/embedding.py \
 ### Unsupervised RLT methods
 
 #### Train and infer Bicut
+Note that we call "alpha" as \eta in the paper.
+
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 alphas=(0.4 0.5 0.6)

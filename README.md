@@ -67,7 +67,7 @@ We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
 
-All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or 'datasets/robust04/runs'.
+All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
 #### 2.2.1 BM25 
 Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
@@ -150,7 +150,7 @@ cd tevatron
 pip install --editable .
 cd ..
 ```
-All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or 'datasets/robust04/runs'.
+All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
 Note that we recommend using GPU to execute all commands in this section.
 

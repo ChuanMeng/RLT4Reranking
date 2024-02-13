@@ -560,6 +560,7 @@ We also consider Oracle here.
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 
+# TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
 python -u ./unsupervised_rlt.py \
@@ -568,6 +569,7 @@ python -u ./unsupervised_rlt.py \
 --output_path ./output
 done
 
+# TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
 
@@ -581,17 +583,17 @@ done
 #### 3.1.2 Greedy-k
 
 
-#### 3.1.3 Suprise
+#### 3.1.3 Surprise
 
 
 #### 3.1.4 Oracle
+
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
-metrics=("rankllama-1000-ndcg@10 "monot5-1000-ndcg@10")
+metrics=("rankllama-1000-ndcg@10" "monot5-1000-ndcg@10")
 
 for retriever in "${retrievers[@]}"
 do
-
 python -u ./unsupervised_rlt.py \
 --name oracle \
 --test_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.rankllama-1000-ndcg@10.json \
@@ -600,7 +602,6 @@ done
 
 for retriever in "${retrievers[@]}"
 do
-
 python -u ./unsupervised_rlt.py \
 --name oracle \
 --test_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.rankllama-1000-ndcg@10.json \

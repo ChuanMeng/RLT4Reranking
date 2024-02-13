@@ -4,7 +4,7 @@ In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods
 
 **This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
 
-This repository is structured into five distinct parts:
+This repository is structured into four distinct parts:
 1. Prerequisites
 2. Data preparation
    * 2.1 Download raw data
@@ -18,9 +18,6 @@ This repository is structured into five distinct parts:
    * 3.3 Evaluation
 4. Reproducing plots
 
-
-Note that for ease of reproducibility,
-
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.
 ```bash
@@ -28,7 +25,6 @@ pip install -r requirements.txt
 ```
 
 ## 2. Data preparation
-For ease of reproducibility, 
 
 ### 2.1 Download raw data
 All raw data would be stored in the `./datesets` directory.

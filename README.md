@@ -557,6 +557,8 @@ We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://d
 We also consider Oracle here.
 
 #### 3.1.1 Fixed-k
+
+Run the following commands to perform Fixed-k on TREC-DL 19 and 20:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 
@@ -572,7 +574,6 @@ done
 # TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
-
 python -u ./unsupervised_rlt.py \
 --name fixed \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
@@ -581,31 +582,91 @@ done
 ```
 
 #### 3.1.2 Greedy-k
+Run the following commands to perform Greedy-k on TREC-DL 19 and 20:
+```bash
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
+metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2" "monot5-1000-ndcg@10-eet-alpha-0.001-beta0" "monot5-1000-ndcg@10-eet-alpha-0.001-beta1" "monot5-1000-ndcg@10-eet-alpha-0.001-beta2")
 
+# TREC-DL 19
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do
+	python -u ./unsupervised_rlt.py \
+	--name greedy \ 
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
+	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
+	--output_path ./output
+	done	
+done
+
+# TREC-DL 20
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do
+	python -u ./unsupervised_rlt.py \
+	--name greedy \ 
+	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
+	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.{metric}.json \
+	--output_path ./output
+	done	
+done
 
 #### 3.1.3 Surprise
+Note that Surprise only depends on retrieval scores and uses a score threshold to truncate a ranked list; Suprise cannot be tuned for re-rankers because the score threshold is set based on Cramer-von-Mises statistic testings and the threshold is not a tunable hyperparameter.
+Run the following commands to perform Surprise on TREC-DL 19 and 20:
+```bash
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
+
+# TREC-DL 19
+for retriever in "${retrievers[@]}"
+do
+python -u ./unsupervised_rlt.py \
+--name surprise \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
+--output_path ./output
+done
+
+# TREC-DL 20
+for retriever in "${retrievers[@]}"
+do
+python -u ./unsupervised_rlt.py \
+--name surprise \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
+--output_path ./output
+done
+```
 
 
 #### 3.1.4 Oracle
-
+Run the following commands to perform Oracle on TREC-DL 19 and 20:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10" "monot5-1000-ndcg@10")
 
+# TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
---name oracle \
---test_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.rankllama-1000-ndcg@10.json \
---output_path ./output
+	for metric in "${metrics[@]}"
+	do
+	python -u ./unsupervised_rlt.py \
+	--name oracle \
+	--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
+	--output_path ./output
+	done
 done
 
+# TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
---name oracle \
---test_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.rankllama-1000-ndcg@10.json \
---output_path ./output
+	for metric in "${metrics[@]}"
+	do
+	python -u ./unsupervised_rlt.py \
+	--name oracle \
+	--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
+	--output_path ./output
+	done
 done
 ```
 
@@ -623,7 +684,7 @@ Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then in
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 alphas=(0.4 0.5 0.6) # the symbol "alpha" used here corresponds to "η" as denoted in the paper.
 
-# train a model on dl19, and infer it on dl20
+# train a model on TREC-DL 19, and infer it on TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
 	for alpha in "${alphas[@]}"
@@ -659,7 +720,7 @@ do
 	done
 done
 
-# train a model on dl20, and infer it on dl19
+# train a model on TREC-DL 20, and infer it on TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
 	for alpha in "${alphas[@]}"
@@ -703,7 +764,7 @@ retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2" "monot5-1000-ndcg@10-eet-alpha-0.001-beta0" "monot5-1000-ndcg@10-eet-alpha-0.001-beta1" "monot5-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("choppy" "attncut" "mmoecut")
 
-# train a model on dl19, and infer it on dl20
+# train a model on TREC-DL 19, and infer it on TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -743,7 +804,7 @@ do
 	done
 done
 
-# train a model on dl20, and infer it on dl19
+# train a model on TREC-DL 20, and infer it on TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -791,7 +852,7 @@ retrievers=("original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("lecut")
 
-# train a model on dl19, and infer it on dl20
+# train a model on TREC-DL 19, and infer it on TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
@@ -830,7 +891,7 @@ do
 	done
 done
 
-# train a model on dl20, and infer it on dl19
+# train a model on TREC-DL 20, and infer it on TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"

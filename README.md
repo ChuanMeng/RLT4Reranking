@@ -64,8 +64,6 @@ tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./data
 mkdir datasets/robust04/
 ```
  
-
-
 ### 2.2 Obtain retrieved lists
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
@@ -553,7 +551,7 @@ python -u ./rlt/embedding.py \
 ## 3. Reproducing results
 
 All checkpoints would be stored in the `./checkpoint` directory.
-Inference outputs would be stored in the `./output/{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
+Inference outputs would be stored in the `./output/{dataset name}.{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
 
 ###  3.1 Unsupervised RLT methods
 We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://dl.acm.org/doi/abs/10.1145/3539618.3592066).
@@ -933,6 +931,7 @@ do
 done
 ```
 ### 3.3 Evaluation
+A file that shows the results (e.g., re-ranking results using the predicted cut-offs) would be generated in the corresponding `./output/{dataset name}.{retriever name}" directory.
 
 Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--RankLLaMA:
 ```bash

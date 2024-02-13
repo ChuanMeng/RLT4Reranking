@@ -6,10 +6,9 @@ In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods
 This repository is structured into five distinct parts:
 1. Prerequisites
 2. Data preparation,
-3. Feature generation,
-4. Train and infer RLT methods,
-5. Evaluation.
-6  Plots
+3. Unsupervised RLT methods,
+5. Supervised RLT methods,
+6  Evaluation
 
 Note that for ease of reproducibility,
 
@@ -19,10 +18,10 @@ We recommend executing all processes in a Linux environment.
 pip install -r requirements.txt
 ```
 
-## 1. Data preparation
+## 2. Data preparation
 For ease of reproducibility, 
 
-### Download raw data
+### 2.1 Download raw data
 
 #### MS MARCO V1 passage ranking
 Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
@@ -53,7 +52,7 @@ tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./data
  
 ```
 
-### Obtain retrieved lists
+### 2.2 Obtain retrieved lists
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
@@ -129,7 +128,7 @@ python -u format.py \
 --ranker_name repllama
 ```
 
-### Obtain re-ranked lists
+### 2.3 Obtain re-ranked lists
 We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
 We already put the source code of [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) in the current directory.
@@ -310,7 +309,7 @@ python -u monoT5.py \
 # Robust04
 ```
 
-### Training label generation 
+### 2.4 Training label generation 
 RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates. 
 However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
@@ -408,10 +407,15 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 ```
 
-###  Feature generation
+### 2.5 Feature generation
 We need to first build tf-idf and doc2vec models for collections, and then infer features for retrieved lists.
 
-#### Build a tf-idf model for collections:
+Please first create the folder where feature files would be produced.
+```bash
+mkdir datasets/msmarco-v1-passage/features
+```
+
+#### Build tf-idf models for collections:
 
 Use the following commands to build tf-idf models for MS MARCO V1 passage ranking and Robust04 collections:
 ```bash
@@ -420,6 +424,8 @@ python -u ./rlt/features.py \
 --index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --mode tfidf 
+
+# Robust04
 ```
 
 #### Build doc2vec models for collections:
@@ -432,8 +438,6 @@ python -u ./rlt/features.py \
 --mode doc2vec --vector_size 128 
 
 # Robust04
-
-
 ```
 #### Generate features for BM25 ranking results
 Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
@@ -527,10 +531,9 @@ python -u ./rlt/embedding.py \
 --p_max_len=512
 ```
 
+## 3. Unsupervised RLT methods
 
-## 3. Train and infer RLT methods
-
-### Unsupervised RLT methods
+## 4. Supervised RLT methods
 
 
 Note that we recommend using GPU to execute the following commands.
@@ -616,7 +619,7 @@ done
 
 #### Train and infer Choppy, AttnCut and MtCut 
 ```bash
-retrievers=("original-splade-pp-ed-pytorch-1000" "original-repllama-1000" "original-bm25-1000")
+retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000" )
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2")
 models=("choppy" "attncut" "mmoecut")
 

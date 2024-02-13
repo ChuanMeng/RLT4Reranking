@@ -6,11 +6,11 @@ In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods
 This repository is structured into five distinct parts:
 1. Prerequisites
 2. Data preparation
-   2.1 Download raw data
-   2.2 Obtain retrieved lists
-   2.3 Obtain re-ranked lists
-   2.4 Training label generation
-   2.5 Feature generation
+   - 2.1 Download raw data
+   - 2.2 Obtain retrieved lists
+   - 2.3 Obtain re-ranked lists
+   - 2.4 Training label generation
+   - 2.5 Feature generation
 3. Unsupervised RLT methods
 4. Supervised RLT methods
 5  Evaluation

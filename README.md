@@ -10,10 +10,8 @@ This repository is structured into five distinct parts:
 4. Train and infer RLT methods,
 5. Evaluation.
 6  Plots
-6. Results on Robust04
 
-
-Note that for ease of reproducibility, we already uploaded the predicted performance files for all methods reported in our paper. See here.
+Note that for ease of reproducibility,
 
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.
@@ -50,11 +48,6 @@ mkdir datasets/msmarco-v1-passage/
 mkdir datasets/msmarco-v1-passage/collection
 wget -P ./datasets/msmarco-v1-passage/collection/ https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz --no-check-certificate
 tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./datasets/msmarco-v1-passage/collection/
-```
-
-#### Robust04
-```bash
-
 ```
 
 ### Obtain retrieved lists
@@ -144,10 +137,12 @@ pip install --editable .
 cd ..
 ```
 
+Note that we recommend using GPU to execute the following commands.
+
 #### BM25--RankLLaMA 
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20:
 ```bash
-# TREC-DL 19
+# TREC-DL 19 
 python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
@@ -314,6 +309,10 @@ Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, w
 
 EET has two hypeparamters, i.e., \alpha and \beta. We consider \alpha=-0.001, and \beta=0, 1 and 2.
 
+Please first create the folder where label files would be produced.
+```bash
+mkdir datasets/msmarco-v1-passage/labels
+```bash
 
 #### BM25--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
@@ -327,7 +326,7 @@ python -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 
-# TREC-DL 20
+# TREC-DL 20 
 python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt \
@@ -335,7 +334,7 @@ python -u rlt/reranking_labels.py \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
-```
+```bash
 
 #### SPLADE++--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
@@ -472,6 +471,7 @@ python -u ./rlt/features.py \
 
 #### Fetch embedding from RepLLaMA
 
+Note that we recommend using GPU to execute the following commands.
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
@@ -524,6 +524,8 @@ python -u ./rlt/embedding.py \
 
 ### Unsupervised RLT methods
 
+
+Note that we recommend using GPU to execute the following commands.
 #### Train and infer Bicut
 Note that we call "alpha" as \eta in the paper.
 

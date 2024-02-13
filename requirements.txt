@@ -1,0 +1,10 @@
+pyserini==0.24.0
+torch==2.0.1
+torchaudio==2.0.2
+torchvision==0.15.2
+tqdm==4.66.1
+pytrec-eval==0.5
+transformers @ git+https://github.com/huggingface/transformers.git@78f6ed6c70b29c1560780e3869a7ad4c6b3d2710
+numpy
+gensim 
+tevatron-0.0.1

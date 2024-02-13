@@ -539,10 +539,10 @@ python -u ./rlt/embedding.py \
 ## 3. Unsupervised RLT methods
 
 ## 4. Supervised RLT methods
+We consider 5 supervised, i.e., [BiCut](https://dl.acm.org/doi/abs/10.1145/3341981.3344234), [Choppy](https://dl.acm.org/doi/10.1145/3397271.3401188), [AttnCut](https://ojs.aaai.org/index.php/AAAI/article/view/16572), [MtCut](https://dl.acm.org/doi/abs/10.1145/3488560.3498466) and [LeCut](https://dl.acm.org/doi/abs/10.1145/3477495.3531998).
+We recommend using GPU to execute all commands in this section.
 
-
-Note that we recommend using GPU to execute the following commands.
-#### Train and infer Bicut
+#### Train and infer BiCut, Choppy, AttnCut, MtCut and LeCut
 Note that we call "alpha" as η in the paper.
 
 ```bash

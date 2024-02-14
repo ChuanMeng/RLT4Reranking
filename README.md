@@ -3,6 +3,7 @@ Supplementary materials for the paper titled "_Ranked List Truncation: From Retr
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
 **This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
+`plots.ipynb` can recreate all plots in the paper.
 
 This repository is structured into four distinct parts:
 1. Prerequisites
@@ -58,6 +59,8 @@ tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./data
 #### 2.1.2 Robust04
 ```bash
 mkdir datasets/robust04/
+mkdir datasets/robust04/collection
+
 ```
  
 ### 2.2 Obtain retrieved lists

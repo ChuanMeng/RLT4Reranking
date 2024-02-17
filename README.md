@@ -26,11 +26,12 @@ pip install -r requirements.txt
 ```
 
 ## 2. Data preparation
+We conduct experiments on TREC 2019 and 2020 deep learning (TREC-DL) and TREC 2004 Robust (Robust04) tracks. 
 
 ### 2.1 Download raw data
 All raw data would be stored in the `./datesets` directory.
 
-#### 2.1.1 MS MARCO V1 passage ranking
+#### 2.1.1 TREC-DL 19 and 20
 Download queries and qrels for TREC-DL 19 and 20, as well as the MS MARCO V1 passage ranking collection:
 ```bash
 # queries
@@ -43,8 +44,8 @@ mv ./datasets/msmarco-v1-passage/queries/msmarco-test2020-queries.tsv ./datasets
 
 # qrels
 mkdir datasets/msmarco-v1-passage/qrels
-wget -P ./datasets/msmarco-v1-passage/qrels/ ./datasets/msmarco-v1-passage/qrels https://trec.nist.gov/data/deep/2019qrels-pass.txt
-wget -P ./datasets/msmarco-v1-passage/qrels/ ./datasets/msmarco-v1-passage/qrels https://trec.nist.gov/data/deep/2020qrels-pass.txt
+wget -P ./datasets/msmarco-v1-passage/qrels/ https://trec.nist.gov/data/deep/2019qrels-pass.txt
+wget -P ./datasets/msmarco-v1-passage/qrels/ https://trec.nist.gov/data/deep/2020qrels-pass.txt
 mv ./datasets/msmarco-v1-passage/qrels/2019qrels-pass.txt ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt
 mv ./datasets/msmarco-v1-passage/qrels/2020qrels-pass.txt ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt
 
@@ -58,9 +59,19 @@ tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./data
 
 #### 2.1.2 Robust04
 ```bash
+# queries & collection
 mkdir datasets/robust04/
 mkdir datasets/robust04/collection
+mkdir datasets/robust04/queries
 
+python -u preprocess_robust04.py \
+--query_output_path ./datasets/robust04/queries/robust04.query-title.tsv \
+--collection_output_path ./datasets/robust04/collection/robust04.tsv
+
+# qrels
+mkdir datasets/robust04/qrels
+wget -P ./datasets/robust04/qrels/ https://trec.nist.gov/data/robust/qrels.robust2004.txt
+mv ./datasets/robust04/qrels/qrels.robust2004.txt ./datasets/robust04/qrels/robust04.qrels.txt
 ```
  
 ### 2.2 Obtain retrieved lists
@@ -92,11 +103,10 @@ python -m pyserini.search.lucene \
 # Robust04
 python -m pyserini.search.lucene \
   --threads 16 --batch-size 128 \
-  --index /gpfs/work3/0/guse0654/cache/index/lucene-index.beir-v1.0.0-robust04.flat.20221116.505594 \
-  --topics ./datasets/robust04/queries/robust04.queries-original.tsv \
-  --output ./datasets/robust04/runs/robust04.run-original-bm25-flat-1000.txt \
-  --output-format trec \
-  --hits 1000 --bm25 --remove-query
+  --topics ./datasets/robust04/queries/robust04.query-title.tsv \
+  --index robust04 \
+  --output ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt \
+  --hits 1000 --bm25
 ```
 
 #### 2.2.2 SPLADE++
@@ -305,7 +315,7 @@ Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Sp
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python -u monoT5.py \
+python -u monot5.py \
 --query_path  ./datasets/msmarco-v1-passage/queries/dl-19-passage.queries-original.tsv \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --index_path msmarco-v1-passage-full \
@@ -313,7 +323,7 @@ python -u monoT5.py \
 --k 1000
 
 # TREC-DL 20
-python -u monoT5.py \
+python -u monot5.py \
 --query_path  ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --index_path msmarco-v1-passage-full \
@@ -442,6 +452,10 @@ python -u ./rlt/features.py \
 --mode tfidf 
 
 # Robust04
+python -u ./rlt/features.py \
+--index_path ./datasets/robust04/collection/collection.tsv \
+--output_path ./datasets/robust04/features/ \
+--mode tfidf 
 ```
 
 #### 2.5.2 Build doc2vec models for collections:

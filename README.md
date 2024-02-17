@@ -59,6 +59,7 @@ mv ./datasets/msmarco-v1-passage/collection/collection.tsv ./datasets/msmarco-v1
 ```
 
 #### 2.1.2 Robust04
+We follow `ir_datasets` to obtain Robust04 queries and the collection; please follow the [instruction](https://ir-datasets.com/trec-robust04.html#trec-robust04) and then run the following commands:
 ```bash
 # queries & collection
 mkdir datasets/robust04/

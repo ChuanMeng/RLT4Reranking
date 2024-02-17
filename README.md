@@ -55,6 +55,7 @@ mkdir datasets/msmarco-v1-passage/
 mkdir datasets/msmarco-v1-passage/collection
 wget -P ./datasets/msmarco-v1-passage/collection/ https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz --no-check-certificate
 tar -zxvf  ./datasets/msmarco-v1-passage/collection/collection.tar.gz  -C ./datasets/msmarco-v1-passage/collection/
+mv ./datasets/msmarco-v1-passage/collection/collection.tsv ./datasets/msmarco-v1-passage/collection/msmarco.tsv  
 ```
 
 #### 2.1.2 Robust04
@@ -66,7 +67,7 @@ mkdir datasets/robust04/queries
 
 python -u preprocess_robust04.py \
 --query_output_path ./datasets/robust04/queries/robust04.query-title.tsv \
---collection_output_path ./datasets/robust04/collection/robust04.tsv
+--collection_output_path ./datasets/robust04/collection/robust04.json
 
 # qrels
 mkdir datasets/robust04/qrels
@@ -82,7 +83,7 @@ For RepLLaMA, we use the retrieved lists shared by the original author.
 All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
 #### 2.2.1 BM25 
-Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
+Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and [Robust04](https://github.com/castorini/pyserini/blob/2154e79a63de0287578d4a3b1239e9a729e1c415/docs/experiments-robust04.md):
 ```bash
 # TREC-DL 19
 python -m pyserini.search.lucene \
@@ -331,6 +332,14 @@ python -u monot5.py \
 --k 1000
 
 # Robust04
+python -u monot5.py \
+--query_path  ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--index_path msmarco-v1-passage-full \
+--model castorini/monot5-base-msmarco \
+--k 1000
+
+
 ```
 
 ### 2.4 Training label generation 
@@ -447,13 +456,13 @@ Use the following commands to build tf-idf models for MS MARCO V1 passage rankin
 ```bash
 # MS MARCO V1 passage ranking
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --mode tfidf 
 
 # Robust04
 python -u ./rlt/features.py \
---index_path ./datasets/robust04/collection/collection.tsv \
+--index_path ./datasets/robust04/collection/robust04.json \
 --output_path ./datasets/robust04/features/ \
 --mode tfidf 
 ```
@@ -463,18 +472,22 @@ Use the following commands to train doc2vec models for MS MARCO V1 passage ranki
 ```bash
 # MS MARCO V1 passage ranking
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --mode doc2vec --vector_size 128 
 
 # Robust04
+python -u ./rlt/features.py \
+--index_path ./datasets/robust04/collection/robust04.json \
+--output_path ./datasets/robust04/features/ \
+--mode doc2vec --vector_size 128 
 ```
 #### 2.5.3 Generate features for BM25 ranking results
 Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -482,7 +495,7 @@ python -u ./rlt/features.py \
 
 # TREC-DL 20
 python -u ./rlt/document_features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -496,7 +509,7 @@ Use the following commands to generate features for SPLADE++ ranking results on 
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -504,7 +517,7 @@ python -u ./rlt/features.py \
 
 # TREC-DL 20
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -516,7 +529,7 @@ Use the following commands to generate features for RepLLaMA ranking results on 
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -524,7 +537,7 @@ python -u ./rlt/features.py \
 
 # TREC-DL 20
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/collection.tsv \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \

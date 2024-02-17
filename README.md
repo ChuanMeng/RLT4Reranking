@@ -168,9 +168,11 @@ All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passag
 Note that we recommend using GPU to execute all commands in this section.
 
 #### 2.3.1 BM25--RankLLaMA 
-Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20:
+Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20 and Robust04:
 ```bash
 # TREC-DL 19 
+mkdir ./datasets/msmarco-v1-passage/runs/rankllama_input/
+
 python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 --query_data_name Tevatron/msmarco-passage \
 --query_data_split dl19 \
@@ -213,6 +215,38 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --encoded_save_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt
 
 # Robust04
+mkdir ./datasets/robust04/runs/rankllama_input/
+
+python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
+--query_path ./datasets/robust04/queries/robust04.query-title.tsv \
+--corpus_path ./datasets/robust04/collection/robust04.json \
+--retrieval_results ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt \
+--output_path ./datasets/robust04/runs/rankllama_input/rerank_input.robust04.run-title-bm25-1000.jsonl \
+--depth 1000
+
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/robust04/runs/rankllama_input/rerank_input.robust04.run-title-bm25-1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 64 \
+  --q_max_len 32 \
+  --p_max_len 164 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-passage-1000.txt
+
+python -u ./tevatron/examples/rankllama/reranker_inference.py \
+  --output_dir=temp \
+  --model_name_or_path castorini/rankllama-v1-7b-lora-doc \
+  --tokenizer_name meta-llama/Llama-2-7b-hf \
+  --encode_in_path ./datasets/robust04/runs/rankllama_input/rerank_input.robust04.run-title-bm25-1000.jsonl \
+  --fp16 \
+  --per_device_eval_batch_size 16 \
+  --q_max_len 32 \
+  --p_max_len 2048 \
+  --dataset_name json \
+  --encoded_save_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-1000.txt
 ```
 
 #### 2.3.2 SPLADE++—-RankLLaMA 
@@ -310,11 +344,15 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 
 #### 2.3.4 BM25--MonoT5 
 We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
-Please first install [PyGaggle](https://github.com/castorini/pygaggle). 
+Please first install it by following the [PyGaggle documentation](https://github.com/castorini/pygaggle).
+Make sure to clone PyGaggle in the current directory:
+```
+git clone --recursive https://github.com/castorini/pygaggle.git
+```
 Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
 Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
 
-Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20:
+Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as [Robust04](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md):
 ```bash
 # TREC-DL 19
 python -u monot5.py \
@@ -333,14 +371,13 @@ python -u monot5.py \
 --k 1000
 
 # Robust04
-python -u monot5.py \
---query_path  ./datasets/msmarco-v1-passage/queries/dl-20-passage.queries-original.tsv \
---run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
---index_path msmarco-v1-passage-full \
---model castorini/monot5-base-msmarco \
---k 1000
+wget -P ./datasets/robust04/collection/ https://storage.googleapis.com/castorini/robust04/trec_disks_4_and_5_concat.txt --no-check-certificate
 
-
+python ./pygaggle/pygaggle/run/robust04_reranker_pipeline_gpu.py \
+      --queries ./datasets/robust04/queries/04.testset \
+      --run ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt \
+      --corpus ./datasets/robust04/collection/trec_disks_4_and_5_concat.txt \
+      --output_monot5 ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
 ```
 
 ### 2.4 Training label generation 

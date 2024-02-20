@@ -1363,8 +1363,8 @@ Table 2: A comparison of RLT methods, optimized for re-ranking effectiveness/eff
 | Greedy-k (β=0) | 795.41 | 0.556 |
 | BiCut (η=0.40) | 341.05 | 0.555 | 
 | Choppy (β=0)   | 489.28 | 0.538 | 
-| AttnCut (β=0)  | **799.28** | **0.560** | 
-| MtCut (β=0)    | **754.96** | **0.560** | 
+| AttnCut (β=0)  | 799.28 | 0.560 | 
+| MtCut (β=0)    | 754.96 | 0.560 | 
 | Greedy-k (β=1) | 209.23 | 0.556  |
 | BiCut (η=0.50) | 243.79  | 0.557 | 
 | Choppy (β=1)   | 512.17 | 0.555 | 
@@ -1376,9 +1376,6 @@ Table 2: A comparison of RLT methods, optimized for re-ranking effectiveness/eff
 | AttnCut (β=2)  | 131.48 | 0.539 | 
 | MtCut (β=2)    | 147.32 | 0.544 |
 | Oracle         | 212.35 | 0.635 |
-
-
-
 
 
 

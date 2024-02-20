@@ -444,7 +444,6 @@ python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt
 
-
 fold_ids=("1" "2" "3" "4" "5")
 for fold_id in "${fold_ids[@]}"
 do
@@ -454,20 +453,6 @@ do
 	--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
 	--seq_len 1000 \
 	--mode infer 
-done
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
-
-
-metrics=("monot5-1000-ndcg@20" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
-
-for metric in "${metrics[@]}"
-do
-	python -u ./process_robust04.py \
-	--mode merge \
-	--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.${metric}.json
 done
 ```
 
@@ -550,6 +535,8 @@ EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0 (onl
 
 For the target IR valuation metric, we use follow [Craswell et al., 2019](https://trec.nist.gov/pubs/trec28/papers/OVERVIEW.DL.pdf) and [Craswell et al., 2020](https://trec.nist.gov/pubs/trec29/papers/OVERVIEW.DL.pdf) to use nDCG@10 on TREC-DL 19 and 20, and follow [Dai et al., 2019](https://dl.acm.org/doi/abs/10.1145/3331184.3331303) to use nDCG@10 on Robust04.
 
+Similar to the above section, we generate 5 folds of training labels on Robust04 to enable 5-fold cross validation.
+
 Please first create the folder where label files would be produced.
 ```bash
 mkdir datasets/msmarco-v1-passage/labels
@@ -557,7 +544,7 @@ mkdir datasets/robust04/labels
 ```
 
 #### 2.5.1 BM25--RankLLaMA
-Use the following commands to generate the training labels on TREC-DL 19 and 20:
+Use the following commands to generate the training labels on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
 python -u rlt/reranking_labels.py \
@@ -640,7 +627,7 @@ python -u rlt/reranking_labels.py \
 ```
 
 #### 2.5.4 BM25--MonoT5
-Use the following commands to generate the training labels on TREC-DL 19 and 20:
+Use the following commands to generate the training labels on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
 python -u rlt/reranking_labels.py \
@@ -668,13 +655,13 @@ python -u ./process_robust04.py \
 fold_ids=("1" "2" "3" "4" "5")
 for fold_id in "${fold_ids[@]}"
 do
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-monot5-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
+	python -u rlt/reranking_labels.py \
+	--retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
+	--reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-monot5-1000.txt \
+	--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+	--metric ndcg@20 \
+	--seq_len 1000 \
+	--output_path datasets/robust04/labels
 done
 ```
 
@@ -682,6 +669,23 @@ done
 
 All checkpoints would be stored in the `./checkpoint` directory.
 Inference outputs would be stored in the `./output/{dataset name}.{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
+
+
+```
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
+
+
+metrics=("monot5-1000-ndcg@20" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
+
+for metric in "${metrics[@]}"
+do
+	python -u ./process_robust04.py \
+	--mode merge \
+	--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.${metric}.json
+done
+```
 
 ###  3.1 Unsupervised RLT methods
 We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://dl.acm.org/doi/abs/10.1145/3539618.3592066).

@@ -666,7 +666,7 @@ done
 ```
 
 ## 3. Reproducing results
-**This section could easily reproduce all results for RQ1, RQ2 and RQ3 in the paper**.
+**This section can easily reproduce all results for RQ1, RQ2 and RQ3 in the paper**.
 
 Methods that require a training set are trained on TREC-DL 19 and then inferred on TREC-DL 20, and vice versa.
 
@@ -738,7 +738,7 @@ done
 ```
 
 #### 3.1.2 Greedy-k
-Run the following commands to perform Greedy-k on TREC-DL 19 and 20:
+Run the following commands to perform Greedy-k on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2" "monot5-1000-ndcg@10-eet-alpha-0.001-beta0" "monot5-1000-ndcg@10-eet-alpha-0.001-beta1" "monot5-1000-ndcg@10-eet-alpha-0.001-beta2")
@@ -794,7 +794,7 @@ done
 
 #### 3.1.3 Surprise
 Note that Surprise only depends on retrieval scores and uses a score threshold to truncate a ranked list; Suprise cannot be tuned for re-rankers because the score threshold is set based on Cramer-von-Mises statistic testings and the threshold is not a tunable hyperparameter.
-Run the following commands to perform Surprise on TREC-DL 19 and 20:
+Run the following commands to perform Surprise on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 
@@ -832,7 +832,7 @@ done
 ```
 
 #### 3.1.4 Oracle
-Run the following commands to perform Oracle on TREC-DL 19 and 20:
+Run the following commands to perform Oracle on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 metrics=("rankllama-1000-ndcg@10" "monot5-1000-ndcg@10")
@@ -842,7 +842,7 @@ for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
 	do
-	python -u ./unsupervised_rlt.py \
+	python -u ./rlt/unsupervised_rlt.py \
 	--name oracle \
 	--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 	--output_path ./output
@@ -854,7 +854,7 @@ for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
 	do
-	python -u ./unsupervised_rlt.py \
+	python -u ./rlt/unsupervised_rlt.py \
 	--name oracle \
 	--test_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
 	--output_path ./output
@@ -1245,25 +1245,7 @@ python -u ./evaluation.py \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
 
 # Robust04
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
 
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold2.title-bm25-1000/robust04-fold2.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold2.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold3.title-bm25-1000/robust04-fold3.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold3.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold4.title-bm25-1000/robust04-fold4.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold4.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold5.title-bm25-1000/robust04-fold5.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold5.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
 ```
 
 Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
@@ -1305,27 +1287,6 @@ python -u ./evaluation.py \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
 
 # Robust04
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold2.title-bm25-1000/robust04-fold2.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold2.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold3.title-bm25-1000/robust04-fold3.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold3.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold4.title-bm25-1000/robust04-fold4.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold4.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-python -u ./rlt/evaluation.py \
---pattern './output/robust04-fold5.title-bm25-1000/robust04-fold5.*' \
---reranking_labels_path ./datasets/robust04/labels/robust04-fold5.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-
 
 python -u ./process_robust04.py \
 --mode merge_k \

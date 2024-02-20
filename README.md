@@ -345,7 +345,7 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 ```
 
 #### 2.3.4 BM25--MonoT5 
-Note that we follow the [document](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md) to run MonoT5 on Robust04; to deal with the long documents in Robust04, MonoT5 uses the [MaxP technique](https://aclanthology.org/2020.findings-emnlp.63/).
+Note that we follow this [document](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md) to run MonoT5 on Robust04; to deal with the long documents in Robust04, MonoT5 uses the [MaxP technique](https://aclanthology.org/2020.findings-emnlp.63/).
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
@@ -376,6 +376,10 @@ python ./pygaggle/pygaggle/run/robust04_reranker_pipeline_gpu.py \
 
 ### 2.4 Feature generation
 We need first to build tf-idf and doc2vec models for collections, and then to infer features for retrieved lists.
+We use identical item features to eliminate confounding factors from the input; each item is represented by its retrieval score, length, unique token count, and the cosine similarity between its tf-idf/doc2vec vector and the vectors of its adjacent items.
+
+Note that be aware that for Robust04, the [RLT literature](https://dl.acm.org/doi/10.1145/3341981.3344234) usually randomly divides the dataset into a training set (80% queries) and a test set (20% queries).
+To eliminate the randomness of the data division, we employ 5-fold cross-validation on Robust04, generating 5 feature folds, each containing approximately 50 queries.
 
 Please first create the folder where feature files would be produced.
 ```bash
@@ -416,6 +420,7 @@ python -u ./rlt/features.py \
 --mode doc2vec --vector_size 128 
 ```
 #### 2.4.3 Generate features for BM25 ranking results
+Note that on Robust04, we first split BM25's run file into 5 folds before generating features.
 Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
@@ -456,39 +461,14 @@ python -u ./process_robust04.py \
 --fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
 
 
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
+metrics=("monot5-1000-ndcg@20" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
 
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta0.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta1.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta2.json
-
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2.json
-
+for metric in "${metrics[@]}"
+do
+	python -u ./process_robust04.py \
+	--mode merge \
+	--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.${metric}.json
+done
 ```
 
 #### 2.4.4 Generate features for SPLADE++ ranking results
@@ -576,7 +556,7 @@ mkdir datasets/msmarco-v1-passage/labels
 mkdir datasets/robust04/labels
 ```
 
-#### 2.4.1 BM25--RankLLaMA
+#### 2.5.1 BM25--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -602,48 +582,20 @@ python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-2048-1000.txt
 
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasetsrobust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
+fold_ids=("1" "2" "3" "4" "5")
+for fold_id in "${fold_ids[@]}"
+do
+	python -u rlt/reranking_labels.py \
+	--retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
+	--reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+	--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+	--metric ndcg@20 \
+	--seq_len 1000 \
+	--output_path datasets/robust04/labels
+done
 ```
 
-#### 2.4.2 SPLADE++--RankLLaMA
+#### 2.5.2 SPLADE++--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -665,7 +617,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 ```
 
-#### 2.4.3 RepLLaMA--RankLLaMA
+#### 2.5.3 RepLLaMA--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -687,7 +639,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 ```
 
-#### 2.4.4 BM25--MonoT5
+#### 2.5.4 BM25--MonoT5
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
@@ -713,45 +665,17 @@ python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
 
+fold_ids=("1" "2" "3" "4" "5")
+for fold_id in "${fold_ids[@]}"
+do
 python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000-monot5-1000.txt \
+--retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-monot5-1000.txt \
 --qrels_path datasets/robust04/qrels/robust04.qrels.txt \
 --metric ndcg@20 \
 --seq_len 1000 \
 --output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000-monot5-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000-monot5-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000-monot5-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
-
-python -u rlt/reranking_labels.py \
---retrieval_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000.txt \
---reranking_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000-monot5-1000.txt \
---qrels_path datasets/robust04/qrels/robust04.qrels.txt \
---metric ndcg@20 \
---seq_len 1000 \
---output_path datasets/robust04/labels
+done
 ```
 
 ## 3. Reproducing results

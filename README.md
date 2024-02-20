@@ -2,7 +2,7 @@
 Supplementary materials for the paper titled "_Ranked List Truncation: From Retrieval to Re-ranking_". 
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
-**This repository enables anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
+**This repository enables anyone to replicate all numerical results and recreate all plots as presented in the paper.**
 `plots.ipynb` can recreate all plots in the paper.
 
 This repository is structured into four distinct parts:
@@ -18,7 +18,7 @@ This repository is structured into four distinct parts:
    * 3.2 Supervised RLT methods
    * 3.3 Evaluation
 4. Reproducing plots
-5. Robust04 results
+5. Results on Robust04
 
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.
@@ -1098,7 +1098,7 @@ done
 
 # Robust04
 retrievers=("title-bm25-1000")
-metrics=("monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
+metrics=("rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2")
 models=("choppy" "attncut" "mmoecut")
 folds_training=("2345" "1345" "1245" "1235" "1234")
 folds_inference=("1" "2" "3" "4" "5")
@@ -1307,9 +1307,12 @@ Run `plots.ipynb` can recreate all plots represented in the paper.
 The recreated plots would be stored in the `./plots` directory.
 
 
-## 5. Robust04 results
+## 5. Results on Robust04
+Due to limited space in our paper, we present results on Robust04 here.
+Table 1 and Table 2 show the results of RLT methods in predicting re-ranking cut-off points for the BM25--RankLLaMA and BM25--MonoT5 pipelines, respectively.
 
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–RankLLaMA pipeline on Robust04. 
+
+Table 1: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25--RankLLaMA pipeline on Robust04. 
 | Method |Avg. k | nDCG@20|
 |---|---|---|
 | w/o re-ranking | - | 0.413 |       
@@ -1338,7 +1341,7 @@ Table: A comparison of RLT methods, optimized for re-ranking effectiveness/effic
 | Oracle         | 131.42 | 0.559 |
 
 
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04. 
+Table 2: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04. 
 | Method |Avg. k | nDCG@20|
 |---|---|---|
 | w/o re-ranking | - | 0.413 |       

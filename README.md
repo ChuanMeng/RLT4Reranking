@@ -82,6 +82,7 @@ mv ./datasets/robust04/qrels/qrels.robust2004.txt ./datasets/robust04/qrels/robu
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
+Note that we rely on publicly available indexes to increase our paper's reproducibility; for Robust04, we only consider BM25 because RepLLaMA and SPLADE++'s indexes are not publicly available at the time of writing.
 
 All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
@@ -165,6 +166,16 @@ cd tevatron
 pip install --editable .
 cd ..
 ```
+
+We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
+Please first install it by following the [PyGaggle documentation](https://github.com/castorini/pygaggle).
+Make sure to clone PyGaggle in the current directory:
+```
+git clone --recursive https://github.com/castorini/pygaggle.git
+```
+Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
+Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
+
 All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
 Note that we recommend using GPU to execute all commands in this section.
@@ -333,14 +344,8 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 ```
 
 #### 2.3.4 BM25--MonoT5 
-We use MonoT5 from [PyGaggle](https://github.com/castorini/pygaggle). 
-Please first install it by following the [PyGaggle documentation](https://github.com/castorini/pygaggle).
-Make sure to clone PyGaggle in the current directory:
-```
-git clone --recursive https://github.com/castorini/pygaggle.git
-```
-Note that PyGaggle requires earlier versions of packages (i.e., Pyserini), so we suggest installing PyGaggle in a separate conda environment.
-Note that using MonoT5 to re-rank the retrieved list returned by RepLLaMA and Splade++ yields worse results; hence we only consider the pipeline of BM25--MonoT5.
+
+Note that on Robust04, we follow th
 
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as [Robust04](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md):
 ```bash

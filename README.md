@@ -82,12 +82,12 @@ mv ./datasets/robust04/qrels/qrels.robust2004.txt ./datasets/robust04/qrels/robu
 We consider three retrievers: BM25, SPLADE++ ("EnsembleDistil") and RepLLaMA (7B).
 We use [Pyserini](https://github.com/castorini/pyserini) to get the retrieved lists returned by BM25 and SPLADE++.
 For RepLLaMA, we use the retrieved lists shared by the original author.
-Note that we rely on publicly available indexes to increase our paper's reproducibility; for Robust04, we only consider BM25 because RepLLaMA and SPLADE++'s indexes are not publicly available at the time of writing.
+Note that we rely on publicly available indexes to increase our paper's reproducibility; for Robust04, we only consider BM25 because RepLLaMA and SPLADE++'s indexes are not publicly available at the time of writing; we follow this [document](https://github.com/castorini/pyserini/blob/2154e79a63de0287578d4a3b1239e9a729e1c415/docs/experiments-robust04.md) to perform BM25.
 
 All retrieved lists would be stored in the directory `datasets/msmarco-v1-passage/runs` or `datasets/robust04/runs`.
 
 #### 2.2.1 BM25 
-Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and [Robust04](https://github.com/castorini/pyserini/blob/2154e79a63de0287578d4a3b1239e9a729e1c415/docs/experiments-robust04.md):
+Use the following commands to get BM25 ranking results on TREC-DL 19, TREC-DL 20 and Robust04:
 ```bash
 # TREC-DL 19
 python -m pyserini.search.lucene \
@@ -345,9 +345,8 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 ```
 
 #### 2.3.4 BM25--MonoT5 
-
-Note that to deal with the long documents in Robust04, MonoT5 uses the [MaxP technique](https://aclanthology.org/2020.findings-emnlp.63/).
-Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as [Robust04](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md):
+Note that we follow the [document](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md) to run MonoT5 on Robust04; to deal with the long documents in Robust04, MonoT5 uses the [MaxP technique](https://aclanthology.org/2020.findings-emnlp.63/).
+Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
 python -u monot5.py \
@@ -375,7 +374,194 @@ python ./pygaggle/pygaggle/run/robust04_reranker_pipeline_gpu.py \
 --output_monot5 ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
 ```
 
-### 2.4 Training label generation 
+### 2.4 Feature generation
+We need first to build tf-idf and doc2vec models for collections, and then to infer features for retrieved lists.
+
+Please first create the folder where feature files would be produced.
+```bash
+mkdir datasets/msmarco-v1-passage/features
+mkdir datasets/robust04/features
+```
+
+#### 2.4.1 Build tf-idf models for collections:
+
+Use the following commands to build tf-idf models for MS MARCO V1 passage ranking and Robust04 collections:
+```bash
+# MS MARCO V1 passage ranking
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--mode tfidf 
+
+# Robust04
+python -u ./rlt/features.py \
+--index_path ./datasets/robust04/collection/robust04.json \
+--output_path ./datasets/robust04/features/ \
+--mode tfidf 
+```
+
+#### 2.4.2 Build doc2vec models for collections:
+Use the following commands to train doc2vec models for MS MARCO V1 passage ranking and Robust04 collections:
+```bash
+# MS MARCO V1 passage ranking
+python -u ./rlt/features.py \
+--index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--mode doc2vec --vector_size 128 
+
+# Robust04
+python -u ./rlt/features.py \
+--index_path ./datasets/robust04/collection/robust04.json \
+--output_path ./datasets/robust04/features/ \
+--mode doc2vec --vector_size 128 
+```
+#### 2.4.3 Generate features for BM25 ranking results
+Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
+```bash
+# TREC-DL 19
+python -u ./rlt/features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer 
+
+# TREC-DL 20
+python -u ./rlt/document_features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer 
+
+# Robust04
+python -u ./process_robust04.py \
+--mode split_run \
+--run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt
+
+
+fold_ids=("1" "2" "3" "4" "5")
+for fold_id in "${fold_ids[@]}"
+do
+	python -u ./rlt/features.py \
+	--output_path ./datasets/robust04/features/ \
+	--run_path ./datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
+	--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+	--seq_len 1000 \
+	--mode infer 
+done
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
+
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta0.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta1.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta2.json
+
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2.json
+
+```
+
+#### 2.4.4 Generate features for SPLADE++ ranking results
+Use the following commands to generate features for SPLADE++ ranking results on TREC-DL 19 and 20:
+```bash
+# TREC-DL 19
+python -u ./rlt/features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer 
+
+# TREC-DL 20
+python -u ./rlt/features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer
+``` 
+
+#### 2.4.5 Generate features for RepLLaMA ranking results
+Use the following commands to generate features for RepLLaMA ranking results on TREC-DL 19 and 20:
+```bash
+# TREC-DL 19
+python -u ./rlt/features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer 
+
+# TREC-DL 20
+python -u ./rlt/features.py \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
+--mode infer 
+```
+Note that the supervised RLT method LeCut needs to be fed with the query-item embeddings from the given neural retriever.
+We need to fetch embeddings from RepLLaMA and merge the embeddings with the features generated in the above step.
+We recommend using GPU to execute the following commands:
+```bash
+# TREC-DL 19
+python -u ./rlt/embedding.py \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--encoder repllama \
+--split dl19 \
+--query_path Tevatron/msmarco-passage \
+--index_path Tevatron/msmarco-passage-corpus \
+--fp16 \
+--q_max_len=512 \
+--p_max_len=512
+
+# TREC-DL 20
+python -u ./rlt/embedding.py \
+--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000 \
+--qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--output_path ./datasets/msmarco-v1-passage/features/ \
+--encoder repllama \
+--split dl20 \
+--query_path Tevatron/msmarco-passage \
+--index_path Tevatron/msmarco-passage-corpus \
+--fp16 \
+--q_max_len=512 \
+--p_max_len=512
+```
+
+### 2.5 Training label generation 
 RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates.
 However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
@@ -566,193 +752,6 @@ python -u rlt/reranking_labels.py \
 --metric ndcg@20 \
 --seq_len 1000 \
 --output_path datasets/robust04/labels
-```
-
-### 2.5 Feature generation
-We need first to build tf-idf and doc2vec models for collections, and then to infer features for retrieved lists.
-
-Please first create the folder where feature files would be produced.
-```bash
-mkdir datasets/msmarco-v1-passage/features
-mkdir datasets/robust04/features
-```
-
-#### 2.5.1 Build tf-idf models for collections:
-
-Use the following commands to build tf-idf models for MS MARCO V1 passage ranking and Robust04 collections:
-```bash
-# MS MARCO V1 passage ranking
-python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
---output_path ./datasets/msmarco-v1-passage/features/ \
---mode tfidf 
-
-# Robust04
-python -u ./rlt/features.py \
---index_path ./datasets/robust04/collection/robust04.json \
---output_path ./datasets/robust04/features/ \
---mode tfidf 
-```
-
-#### 2.5.2 Build doc2vec models for collections:
-Use the following commands to train doc2vec models for MS MARCO V1 passage ranking and Robust04 collections:
-```bash
-# MS MARCO V1 passage ranking
-python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
---output_path ./datasets/msmarco-v1-passage/features/ \
---mode doc2vec --vector_size 128 
-
-# Robust04
-python -u ./rlt/features.py \
---index_path ./datasets/robust04/collection/robust04.json \
---output_path ./datasets/robust04/features/ \
---mode doc2vec --vector_size 128 
-```
-#### 2.5.3 Generate features for BM25 ranking results
-Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
-```bash
-# TREC-DL 19
-python -u ./rlt/features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---seq_len 1000 \
---mode infer 
-
-# TREC-DL 20
-python -u ./rlt/document_features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---seq_len 1000 \
---mode infer 
-
-# Robust04
-python -u ./process_robust04.py \
---mode split_run \
---run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt
-
-
-fold_ids=("1" "2" "3" "4" "5")
-for fold_id in "${fold_ids[@]}"
-do
-	python -u ./rlt/features.py \
-	--output_path ./datasets/robust04/features/ \
-	--run_path ./datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
-	--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
-	--seq_len 1000 \
-	--mode infer 
-done
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
-
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta0.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta1.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta2.json
-
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1.json
-
-python -u ./process_robust04.py \
---mode merge \
---fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2.json
-
-```
-
-#### 2.5.4 Generate features for SPLADE++ ranking results
-Use the following commands to generate features for SPLADE++ ranking results on TREC-DL 19 and 20:
-```bash
-# TREC-DL 19
-python -u ./rlt/features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---seq_len 1000 \
---mode infer 
-
-# TREC-DL 20
-python -u ./rlt/features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---seq_len 1000 \
---mode infer
-``` 
-
-#### 2.5.5 Generate features for RepLLaMA ranking results
-Use the following commands to generate features for RepLLaMA ranking results on TREC-DL 19 and 20:
-```bash
-# TREC-DL 19
-python -u ./rlt/features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---seq_len 1000 \
---mode infer 
-
-# TREC-DL 20
-python -u ./rlt/features.py \
---output_path ./datasets/msmarco-v1-passage/features/ \
---run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---seq_len 1000 \
---mode infer 
-```
-Note that the supervised RLT method LeCut needs to be fed with the query-item embeddings from the given neural retriever.
-We need to fetch embeddings from RepLLaMA and merge the embeddings with the features generated in the above step.
-We recommend using GPU to execute the following commands:
-```bash
-# TREC-DL 19
-python -u ./rlt/embedding.py \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000 \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---output_path ./datasets/msmarco-v1-passage/features/ \
---encoder repllama \
---split dl19 \
---query_path Tevatron/msmarco-passage \
---index_path Tevatron/msmarco-passage-corpus \
---fp16 \
---q_max_len=512 \
---p_max_len=512
-
-# TREC-DL 20
-python -u ./rlt/embedding.py \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000 \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---output_path ./datasets/msmarco-v1-passage/features/ \
---encoder repllama \
---split dl20 \
---query_path Tevatron/msmarco-passage \
---index_path Tevatron/msmarco-passage-corpus \
---fp16 \
---q_max_len=512 \
---p_max_len=512
 ```
 
 ## 3. Reproducing results

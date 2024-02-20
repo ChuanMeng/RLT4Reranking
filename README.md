@@ -1245,12 +1245,12 @@ python -u ./process_robust04.py \
 Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--RankLLaMA:
 ```bash
 # TREC-DL 19
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
 
 # TREC-DL 20
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
 

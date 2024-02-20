@@ -226,27 +226,15 @@ python -u ./tevatron/examples/rankllama/prepare_rerank_file.py \
 
 python -u ./tevatron/examples/rankllama/reranker_inference.py \
   --output_dir=temp \
-  --model_name_or_path castorini/rankllama-v1-7b-lora-passage \
-  --tokenizer_name meta-llama/Llama-2-7b-hf \
-  --encode_in_path ./datasets/robust04/runs/rankllama_input/rerank_input.robust04.run-title-bm25-1000.jsonl \
-  --fp16 \
-  --per_device_eval_batch_size 64 \
-  --q_max_len 32 \
-  --p_max_len 164 \
-  --dataset_name json \
-  --encoded_save_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-passage-1000.txt
-
-python -u ./tevatron/examples/rankllama/reranker_inference.py \
-  --output_dir=temp \
   --model_name_or_path castorini/rankllama-v1-7b-lora-doc \
   --tokenizer_name meta-llama/Llama-2-7b-hf \
   --encode_in_path ./datasets/robust04/runs/rankllama_input/rerank_input.robust04.run-title-bm25-1000.jsonl \
   --fp16 \
-  --per_device_eval_batch_size 16 \
+  --per_device_eval_batch_size 8 \
   --q_max_len 32 \
   --p_max_len 2048 \
   --dataset_name json \
-  --encoded_save_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-1000.txt
+  --encoded_save_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-2048-1000.txt
 ```
 
 #### 2.3.2 SPLADE++—-RankLLaMA 
@@ -374,18 +362,20 @@ python -u monot5.py \
 wget -P ./datasets/robust04/collection/ https://storage.googleapis.com/castorini/robust04/trec_disks_4_and_5_concat.txt --no-check-certificate
 
 python ./pygaggle/pygaggle/run/robust04_reranker_pipeline_gpu.py \
-      --queries ./datasets/robust04/queries/04.testset \
-      --run ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt \
-      --corpus ./datasets/robust04/collection/trec_disks_4_and_5_concat.txt \
-      --output_monot5 ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
+--queries ./datasets/robust04/queries/04.testset \
+--run ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt \
+--corpus ./datasets/robust04/collection/trec_disks_4_and_5_concat.txt \
+--output_monot5 ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
 ```
 
 ### 2.4 Training label generation 
-RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates. 
+RLT methods (especially supervised ones) need the re-ranking quality in terms of a specific IR evaluation metric across all re-ranking cut-off candidates.
 However, only considering the re-ranking quality would ignore efficiency.
 Thus, to quantify different effectiveness/efficiency trade-offs in re-ranking, we use [the efficiency-effectiveness trade-off (EET) metric](https://dl.acm.org/doi/abs/10.1145/1835449.1835475) values to score all re-ranking cut-off candidates; each re-ranking cut-off candidate would have a different score under each effectiveness/efficiency trade-off specified by EET.
 
-EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0, 1 and 2.
+EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0 (only effectiveness), 1 (balance effectiveness and efficiency) and 2 (more efficiency).
+
+For the target IR valuation metric, we use follow [Craswell et al., 2019](https://trec.nist.gov/pubs/trec28/papers/OVERVIEW.DL.pdf) and [Craswell et al., 2020](https://trec.nist.gov/pubs/trec29/papers/OVERVIEW.DL.pdf) to use nDCG@10 on TREC-DL 19 and 20, and follow [Dai et al., 2019](https://dl.acm.org/doi/abs/10.1145/3331184.3331303) to use nDCG@10 on Robust04.
 
 Please first create the folder where label files would be produced.
 ```bash
@@ -415,6 +405,49 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # Robust04
+python -u ./preprocess_robust04.py \
+--mode split_run \
+--run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-2048-1000.txt
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasetsrobust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
 ```
 
 #### 2.4.2 SPLADE++--RankLLaMA
@@ -442,6 +475,7 @@ python -u rlt/reranking_labels.py \
 #### 2.4.3 RepLLaMA--RankLLaMA
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
+# TREC-DL 19
 python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000-rankllama-1000.txt \
@@ -450,6 +484,7 @@ python -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 
+# TREC-DL 20
 python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt \
@@ -462,6 +497,7 @@ python -u rlt/reranking_labels.py \
 #### 2.4.4 BM25--MonoT5
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
+# TREC-DL 19
 python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-monot5-1000.txt \
@@ -470,6 +506,7 @@ python -u rlt/reranking_labels.py \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
 
+# TREC-DL 20
 python -u rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-monot5-1000.txt \
@@ -477,6 +514,51 @@ python -u rlt/reranking_labels.py \
 --metric ndcg@10 \
 --seq_len 1000 \
 --output_path datasets/msmarco-v1-passage/labels
+
+# Robust04
+python -u ./preprocess_robust04.py \
+--mode split_run \
+--run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold1.run-title-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold2.run-title-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold3.run-title-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold4.run-title-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
+
+python -u rlt/reranking_labels.py \
+--retrieval_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000.txt \
+--reranking_run_path datasets/robust04/runs/robust04-fold5.run-title-bm25-1000-monot5-1000.txt \
+--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
+--metric ndcg@20 \
+--seq_len 1000 \
+--output_path datasets/robust04/labels
 ```
 
 ### 2.5 Feature generation
@@ -525,21 +607,75 @@ Use the following commands to generate features for BM25 ranking results on TREC
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer 
 
 # TREC-DL 20
 python -u ./rlt/document_features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer 
 
 # Robust04
+python -u ./preprocess_robust04.py \
+--mode split_run \
+--run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt
+
+
+fold_ids=("1" "2" "3" "4" "5")
+for fold_id in "${fold_ids[@]}"
+do
+	python -u ./rlt/features.py \
+	--output_path ./datasets/robust04/features/ \
+	--run_path ./datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
+	--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+	--seq_len 1000 \
+	--mode infer 
+done
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
+
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta0.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta1.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20-eet-alpha-0.001-beta2.json
+
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1.json
+
+python -u ./process_robust04.py \
+--mode merge \
+--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2.json
+
 ```
 
 #### 2.5.4 Generate features for SPLADE++ ranking results
@@ -547,18 +683,18 @@ Use the following commands to generate features for SPLADE++ ranking results on 
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer 
 
 # TREC-DL 20
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer
 ``` 
 
@@ -567,18 +703,18 @@ Use the following commands to generate features for RepLLaMA ranking results on 
 ```bash
 # TREC-DL 19
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer 
 
 # TREC-DL 20
 python -u ./rlt/features.py \
---index_path ./datasets/msmarco-v1-passage/collection/msmarco.tsv \
 --output_path ./datasets/msmarco-v1-passage/features/ \
 --run_path ./datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
+--seq_len 1000 \
 --mode infer 
 ```
 Note that the supervised RLT method LeCut needs to be fed with the query-item embeddings from the given neural retriever.
@@ -630,7 +766,7 @@ retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-
 # TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
+python -u ./rlt/unsupervised_rlt.py \
 --name fixed \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 --output_path ./output
@@ -639,10 +775,24 @@ done
 # TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
+python -u ./rlt/unsupervised_rlt.py \
 --name fixed \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 --output_path ./output
+done
+
+# Robust04
+retrievers=("title-bm25-1000")
+folds=("1" "2" "3" "4" "5")
+for retriever in "${retrievers[@]}"
+do
+	for fold in "${folds[@]}"
+	do
+	python -u ./rlt/unsupervised_rlt.py \
+	--name fixed \
+	--feature_path ./datasets/robust04/features/robust04-fold${fold}.feature-${retriever}.json \
+	--output_path ./output
+	done
 done
 ```
 
@@ -657,7 +807,7 @@ for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
 	do
-	python -u ./unsupervised_rlt.py \
+	python -u ./rlt/unsupervised_rlt.py \
 	--name greedy \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-${retriever}.${metric}.json \
@@ -670,12 +820,34 @@ for retriever in "${retrievers[@]}"
 do
 	for metric in "${metrics[@]}"
 	do
-	python -u ./unsupervised_rlt.py \
+	python -u ./rlt/unsupervised_rlt.py \
 	--name greedy \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 	--train_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-${retriever}.${metric}.json \
 	--output_path ./output
 	done	
+done
+
+# Robust04
+retrievers=("title-bm25-1000")
+metrics=("monot5-1000-ndcg@20" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
+folds_training=("2345" "1345" "1245" "1235" "1234")
+folds_inference=("1" "2" "3" "4" "5")
+
+# train a model
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do
+		for ((i=0; i<${#folds_training[@]}; i++));
+		do
+		python -u ./rlt/unsupervised_rlt.py \
+		--name greedy \
+		--feature_path ./datasets/robust04/features/robust04-fold${folds_inference[$i]}.feature-${retriever}.json \
+		--train_labels_path ./datasets/robust04/labels/robust04-fold${folds_training[$i]}.label-${retriever}.${metric}.json \
+		--output_path ./output
+		done
+	done
 done
 ```
 
@@ -688,7 +860,7 @@ retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-
 # TREC-DL 19
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
+python -u ./rlt/unsupervised_rlt.py \
 --name surprise \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
 --output_path ./output
@@ -697,10 +869,24 @@ done
 # TREC-DL 20
 for retriever in "${retrievers[@]}"
 do
-python -u ./unsupervised_rlt.py \
+python -u ./rlt/unsupervised_rlt.py \
 --name surprise \
 --feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
 --output_path ./output
+done
+
+# Robust04
+retrievers=("title-bm25-1000")
+folds=("1" "2" "3" "4" "5")
+for retriever in "${retrievers[@]}"
+do
+	for fold in "${folds[@]}"
+	do
+	python -u ./rlt/unsupervised_rlt.py \
+	--name surprise \
+	--feature_path ./datasets/robust04/features/robust04-fold${fold}.feature-${retriever}.json \
+	--output_path ./output
+	done
 done
 ```
 
@@ -733,6 +919,25 @@ do
 	--output_path ./output
 	done
 done
+
+# Robust04
+retrievers=("title-bm25-1000")
+metrics=("monot5-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20")
+folds=("1" "2" "3" "4" "5")
+
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do
+		for fold in "${folds[@]}"
+		do
+		python -u ./rlt/unsupervised_rlt.py \
+		--name oracle \
+		--test_labels_path ./datasets/robust04/labels/robust04-fold${fold}.label-${retriever}.${metric}.json \
+		--output_path ./output
+		done
+	done
+done
 ```
  
 ### 3.2. Supervised RLT methods
@@ -754,7 +959,7 @@ do
 	for alpha in "${alphas[@]}"
 	do 
 	# training
-	python -u ./rlt/main.py \
+	python -u ./rlt/supervised_rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
@@ -767,7 +972,7 @@ do
 	--binarise_qrels \
 
 	#inference
-	python -u ./rlt/main.py \
+	python -u ./rlt/supervised_rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
@@ -790,7 +995,7 @@ do
 	for alpha in "${alphas[@]}"
 	do 
 	# training
-	python -u ./rlt/main.py \
+	python -u ./rlt/supervised_rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
@@ -803,7 +1008,7 @@ do
 	--binarise_qrels \
 
 	# inference
-	python -u ./rlt/main.py \
+	python -u ./rlt/supervised_rlt/main.py \
 	--name bicut \
 	--checkpoint_path ./checkpoint/ \
 	--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
@@ -817,6 +1022,49 @@ do
 	--checkpoint_name dl-20-passage.${retriever}.bicut.alpha${alpha} \
 	--output_path ./output \
 	--infer
+	done
+done
+
+# Robust04
+retrievers=("title-bm25-1000")
+alphas=(0.4 0.5 0.6) # the symbol "alpha" used here corresponds to "η" as denoted in the paper.
+folds_training=("2345" "1345" "1245" "1235" "1234")
+folds_inference=("1" "2" "3" "4" "5")
+
+# train a model
+for retriever in "${retrievers[@]}"
+do
+	for alpha in "${alphas[@]}"
+	do
+		for ((i=0; i<${#folds_training[@]}; i++));
+		do
+		# training
+		python -u ./rlt/supervised_rlt/main.py \
+		--name bicut \
+		--checkpoint_path ./checkpoint/ \
+		--feature_path ./datasets/robust04/features/robust04-fold${folds_training[$i]}.feature-${retriever}.json \
+		--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+		--epoch_num 100 \
+		--alpha ${alpha} \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+
+		#inference
+		python -u ./rlt/supervised_rlt/main.py \
+		--name bicut \
+		--checkpoint_path ./checkpoint/ \
+		--feature_path ./datasets/robust04/features/robust04-fold${folds_inference[$i]}.feature-${retriever}.json \
+		--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+		--epoch_num 100 \
+		--alpha ${alpha} \
+		--interval 1 \
+		--seq_len 1000 \
+		--batch_size 64 \
+		--checkpoint_name robust04-fold${folds_training[$i]}.${retriever}.bicut.alpha${alpha} \
+		--output_path ./output \
+		--infer
+		done
 	done
 done
 ```
@@ -836,7 +1084,7 @@ do
 		for model in "${models[@]}"
 		do
 		# training
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
@@ -849,7 +1097,7 @@ do
 		--binarise_qrels \
 
 		# inference
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
@@ -876,7 +1124,7 @@ do
 		for model in "${models[@]}"
 		do
 		# training
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.json \
@@ -889,7 +1137,7 @@ do
 		--binarise_qrels \
 	
 		# inference
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.json \
@@ -903,6 +1151,52 @@ do
 		--checkpoint_name dl-20-passage.${retriever}.${model}.${metric} \
 		--output_path ./output \
 		--infer
+		done
+	done
+done
+
+# Robust04
+retrievers=("title-bm25-1000")
+metrics=("monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
+models=("choppy" "attncut" "mmoecut")
+folds_training=("2345" "1345" "1245" "1235" "1234")
+folds_inference=("1" "2" "3" "4" "5")
+
+for retriever in "${retrievers[@]}"
+do
+	for metric in "${metrics[@]}"
+	do 
+		for model in "${models[@]}"
+		do
+			for ((i=0; i<${#folds_training[@]}; i++));
+			do
+			# training
+			python -u ./rlt/supervised_rlt/main.py \
+			--name ${model} \
+			--checkpoint_path ./checkpoint/ \
+			--feature_path ./datasets/robust04/features/robust04-fold${folds_training[$i]}.feature-${retriever}.json \
+			--label_path ./datasets/robust04/labels/robust04-fold${folds_training[$i]}.label-${retriever}.${metric}.json \
+			--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+			--epoch_num 100 \
+			--interval 1 \
+			--seq_len 1000 \
+			--batch_size 64 \
+	
+			# inference
+			python -u ./rlt/supervised_rlt/main.py \
+			--name ${model} \
+			--checkpoint_path ./checkpoint/ \
+			--feature_path ./datasets/robust04/features/robust04-fold${folds_inference[$i]}.feature-${retriever}.json \
+			--label_path ./datasets/robust04/labels/robust04-fold${folds_inference[$i]}.label-${retriever}.${metric}.json \
+			--qrels_path ./datasets/robust04/qrels/robust04.qrels.txt \
+			--epoch_num 100 \
+			--interval 1 \
+			--seq_len 1000 \
+			--batch_size 64 \
+			--checkpoint_name robust04-fold${folds_training[$i]}.${retriever}.${model}.${metric} \
+			--output_path ./output \
+			--infer
+			done
 		done
 	done
 done
@@ -924,7 +1218,7 @@ do
 		for model in "${models[@]}"
 		do
 		# training
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
@@ -937,7 +1231,7 @@ do
 		--binarise_qrels \
 	
 		# inference
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
@@ -963,7 +1257,7 @@ do
 		for model in "${models[@]}"
 		do
 		# training
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-${retriever}.embed-repllama.json \
@@ -976,7 +1270,7 @@ do
 		--binarise_qrels \
 	
 		# inference
-		python -u ./rlt/main.py \
+		python -u ./rlt/supervised_rlt/main.py \
 		--name ${model} \
 		--checkpoint_path ./checkpoint/ \
 		--feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-${retriever}.embed-repllama.json \
@@ -1003,17 +1297,32 @@ Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--R
 python -u ./evaluation.py \
 --pattern './output/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-bm25-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---binarise_qrels
 
 # TREC-DL 20
 python -u ./evaluation.py \
 --pattern './output/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-bm25-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---binarise_qrels
+
+# Robust04
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold2.title-bm25-1000/robust04-fold2.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold2.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold3.title-bm25-1000/robust04-fold3.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold3.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold4.title-bm25-1000/robust04-fold4.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold4.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold5.title-bm25-1000/robust04-fold5.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold5.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
 ```
 
 Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
@@ -1022,17 +1331,11 @@ Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE+
 python -u ./evaluation.py \
 --pattern './output/dl-19-passage.original-splade-pp-ed-pytorch-1000/dl-19-passage.original-splade-pp-ed-pytorch-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-splade-pp-ed-pytorch-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---binarise_qrels
 
 # TREC-DL 20
 python -u ./evaluation.py \
 --pattern './output/dl-20-passage.original-splade-pp-ed-pytorch-1000/dl-20-passage.original-splade-pp-ed-pytorch-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-splade-pp-ed-pytorch-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---binarise_qrels
 ```
 
 Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
@@ -1041,17 +1344,11 @@ Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaM
 python -u ./evaluation.py \
 --pattern './output/dl-19-passage.original-repllama-1000/dl-19-passage.original-repllama-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-repllama-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---binarise_qrels
 
 # TREC-DL 20
 python -u ./evaluation.py \
 --pattern './output/dl-20-passage.original-repllama-1000/dl-20-passage.original-repllama-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-repllama-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---binarise_qrels
 ```
 
 Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--MonoT5:
@@ -1060,20 +1357,182 @@ Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--M
 python -u ./evaluation.py \
 --pattern './output/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-19-passage.feature-original-bm25-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
---binarise_qrels
 
 # TREC-DL 20
 python -u ./evaluation.py \
 --pattern './output/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
---feature_path ./datasets/msmarco-v1-passage/features/dl-20-passage.feature-original-bm25-1000.json \
---qrels_path ./datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
---binarise_qrels
+
+# Robust04
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold2.title-bm25-1000/robust04-fold2.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold2.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold3.title-bm25-1000/robust04-fold3.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold3.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold4.title-bm25-1000/robust04-fold4.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold4.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04-fold5.title-bm25-1000/robust04-fold5.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04-fold5.label-title-bm25-1000.monot5-1000-ndcg@20.json
 ```
 
 ## 4. Reproducing plots
 Run `plots.ipynb` can recreate all plots represented in the paper.
 The recreated plots would be stored in the `./plots` directory.
+
+
+## 4. Robust04 results
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold1). 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - | 0.395 |       
+| Fixed-k (10)   | 10 | 0.417 |         
+| Fixed-k (20)   | 20 | 0.425 |   
+| Fixed-k (100)  | 100 | 0.518 |   
+| Fixed-k (200)  | 200 | 0.534 |    
+| Fixed-k (500)  | 500 | 0.541|   
+| Fixed-k (1000) | 1000 | 0.540  |   
+| Surprise       | 709.00 | 0.544 | 
+| Greedy-k (β=0) | 894.00 | 0.540 |
+| BiCut (η=0.40) | 331.65 | 0.541 | 
+| Choppy (β=0)   | 500.40 | 0.527 | 
+| AttnCut (β=0)  | 804.48  | 0.544 | 
+| MtCut (β=0)    | 697.08 | 0.548 | 
+| Greedy-k (β=1) | 202.00 | 0.534 |
+| BiCut (η=0.50) | 277.44 | 0.543 | 
+| Choppy (β=1)   | 470.02 | 0.537 | 
+| AttnCut (β=1)  | 223.04 | 0.528 | 
+| MtCut (β=1)    | 232.79 | 0.530 |
+| Greedy-k (β=2) | 129.00 | 0.523 |
+| BiCut (η=0.60) | 130.12 | 0.526 | 
+| Choppy (β=2)   | *460.83* | *0.541* | 
+| AttnCut (β=2)  | 117.50 | 0.502 | 
+| MtCut (β=2)    | 135.52 | 0.519 |
+| Oracle         | 199.0 | 0.599 |
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold2). 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - |  |       
+| Fixed-k (10)   |  |  |         
+| Fixed-k (20)   |  |  |   
+| Fixed-k (100)  |  |  |   
+| Fixed-k (200)  |  |  | 
+| Fixed-k (500)  |  |  |      
+| Fixed-k (1000) |  |  |   
+| Surprise       |  |  |  
+| Greedy-k (β=0) |  |  |
+| BiCut (η=0.40) |  |  | 
+| Choppy (β=0)   |  |  | 
+| AttnCut (β=0)  |  |  | 
+| MtCut (β=0)    |  |  | 
+| Greedy-k (β=1) |  |  |
+| BiCut (η=0.50) |  |  | 
+| Choppy (β=1)   |  |  | 
+| AttnCut (β=1)  |  |  | 
+| MtCut (β=1)    |  |  |
+| Greedy-k (β=2) |  |  |
+| BiCut (η=0.60) |  |  | 
+| Choppy (β=2)   |  |  | 
+| AttnCut (β=2)  |  |  | 
+| MtCut (β=2)    |  |  |
+| Oracle         |  |  |
+
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold3). 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - |  |       
+| Fixed-k (10)   |  |  |         
+| Fixed-k (20)   |  |  |   
+| Fixed-k (100)  |  |  |   
+| Fixed-k (200)  |  |  |  
+| Fixed-k (500)  |  |  |      
+| Fixed-k (1000) |  |  |   
+| Surprise       |  |  |  
+| Greedy-k (β=0) |  |  |
+| BiCut (η=0.40) |  |  | 
+| Choppy (β=0)   |  |  | 
+| AttnCut (β=0)  |  |  | 
+| MtCut (β=0)    |  |  | 
+| Greedy-k (β=1) |  |  |
+| BiCut (η=0.50) |  |  | 
+| Choppy (β=1)   |  |  | 
+| AttnCut (β=1)  |  |  | 
+| MtCut (β=1)    |  |  |
+| Greedy-k (β=2) |  |  |
+| BiCut (η=0.60) |  |  | 
+| Choppy (β=2)   |  |  | 
+| AttnCut (β=2)  |  |  | 
+| MtCut (β=2)    |  |  |
+| Oracle         |  |  |
+
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold4). 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - |  |       
+| Fixed-k (10)   |  |  |         
+| Fixed-k (20)   |  |  |   
+| Fixed-k (100)  |  |  |   
+| Fixed-k (200)  |  |  |  
+| Fixed-k (500)  |  |  |      
+| Fixed-k (1000) |  |  | 
+| Surprise       |  |  |    
+| Greedy-k (β=0) |  |  |
+| BiCut (η=0.40) |  |  | 
+| Choppy (β=0)   |  |  | 
+| AttnCut (β=0)  |  |  | 
+| MtCut (β=0)    |  |  | 
+| Greedy-k (β=1) |  |  |
+| BiCut (η=0.50) |  |  | 
+| Choppy (β=1)   |  |  | 
+| AttnCut (β=1)  |  |  | 
+| MtCut (β=1)    |  |  |
+| Greedy-k (β=2) |  |  |
+| BiCut (η=0.60) |  |  | 
+| Choppy (β=2)   |  |  | 
+| AttnCut (β=2)  |  |  | 
+| MtCut (β=2)    |  |  |
+| Oracle         |  |  |
+
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold5). 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - |  |       
+| Fixed-k (10)   |  |  |         
+| Fixed-k (20)   |  |  |   
+| Fixed-k (100)  |  |  |   
+| Fixed-k (200)  |  |  |   
+| Fixed-k (500)  |  |  |     
+| Fixed-k (1000) |  |  |    
+| Surprise       | 715.92 | 0.554 | 
+| Greedy-k (β=0) | 819.00 | 0.554 |
+| BiCut (η=0.40) |  |  | 
+| Choppy (β=0)   |  |  | 
+| AttnCut (β=0)  |  |  | 
+| MtCut (β=0)    |  |  | 
+| Greedy-k (β=1) | 209.0 | 0.558 |
+| BiCut (η=0.50) |  |  | 
+| Choppy (β=1)   |  |  | 
+| AttnCut (β=1)  |  |  | 
+| MtCut (β=1)    |  |  |
+| Greedy-k (β=2) | 129.0 | 0.547 |
+| BiCut (η=0.60) |  |  | 
+| Choppy (β=2)   |  |  | 
+| AttnCut (β=2)  |  |  | 
+| MtCut (β=2)    |  |  |
+| Oracle         | 197.76 | 0.629 |
+
 

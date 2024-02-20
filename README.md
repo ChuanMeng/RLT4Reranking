@@ -674,7 +674,8 @@ Please be aware that for Robust04, the [RLT literature](https://dl.acm.org/doi/1
 So we perform 5-fold cross-validation to eliminate the impact of the random data division on results.
 Next, we need to generate training sets comprising features and labels for each test set, e.g., if fold 1 is used for testing, folds 2, 3, 4 and 5 would be used for training...
 Use the following commands to generate sets of features and labels for each test fold:
-```python -u ./process_robust04.py \
+```bash
+python -u ./process_robust04.py \
 --mode merge \
 --fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
 

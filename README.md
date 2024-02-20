@@ -18,7 +18,7 @@ This repository is structured into four distinct parts:
    * 3.2 Supervised RLT methods
    * 3.3 Evaluation
 4. Reproducing plots
-5. Results on **Robust04** (we report results on Robust04 due to the limited space in our paper)
+5. Results on **Robust04** (we report results on Robust04 here due to the limited space in our paper)
 
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.

@@ -60,7 +60,7 @@ mv ./datasets/msmarco-v1-passage/collection/collection.tsv ./datasets/msmarco-v1
 ```
 
 #### 2.1.2 Robust04
-We follow `ir_datasets` to fetch Robust04 queries and the collection; please follow finish what the [instruction](https://ir-datasets.com/trec-robust04.html#trec-robust04) requires and before executing the following commands:
+We follow `ir_datasets` to fetch Robust04 queries and the collection; please first follow this [instruction](https://ir-datasets.com/trec-robust04.html#trec-robust04) before executing the following commands:
 ```bash
 # queries & collection
 mkdir datasets/robust04/
@@ -378,8 +378,8 @@ python ./pygaggle/pygaggle/run/robust04_reranker_pipeline_gpu.py \
 We need first to build tf-idf and doc2vec models for collections, and then to infer features for retrieved lists.
 We use identical item features to eliminate confounding factors from the input; each item is represented by its retrieval score, length, unique token count, and the cosine similarity between its tf-idf/doc2vec vector and the vectors of its adjacent items.
 
-Note that be aware that for Robust04, the [RLT literature](https://dl.acm.org/doi/10.1145/3341981.3344234) usually randomly divides the dataset into a training set (80% queries) and a test set (20% queries).
-To eliminate the randomness of the data division, we employ 5-fold cross-validation on Robust04, generating 5 feature folds, each containing approximately 50 queries.
+Note that be aware that for Robust04 (250 queries), the [RLT literature](https://dl.acm.org/doi/10.1145/3341981.3344234) usually randomly divides the dataset into a training set (80% queries) and a test set (20% queries).
+To eliminate the impact of the random data division on results, we employ 5-fold cross-validation on Robust04, generating 5 feature sets, each containing approximately 50 queries.
 
 Please first create the folder where feature files would be produced.
 ```bash
@@ -420,7 +420,7 @@ python -u ./rlt/features.py \
 --mode doc2vec --vector_size 128 
 ```
 #### 2.4.3 Generate features for BM25 ranking results
-Note that on Robust04, we first split BM25's run file into 5 folds before generating features.
+Note that on Robust04, we first split BM25's run file into 5 sets before generating features.
 Use the following commands to generate features for BM25 ranking results on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
@@ -535,7 +535,7 @@ EET has two hypeparamters, i.e., α and β. We consider α=-0.001, and β=0 (onl
 
 For the target IR valuation metric, we use follow [Craswell et al., 2019](https://trec.nist.gov/pubs/trec28/papers/OVERVIEW.DL.pdf) and [Craswell et al., 2020](https://trec.nist.gov/pubs/trec29/papers/OVERVIEW.DL.pdf) to use nDCG@10 on TREC-DL 19 and 20, and follow [Dai et al., 2019](https://dl.acm.org/doi/abs/10.1145/3331184.3331303) to use nDCG@10 on Robust04.
 
-Similar to the above section, we generate 5 folds of training labels on Robust04 to enable 5-fold cross validation.
+Similar to the above section, we generate 5 sets of training labels on Robust04 to enable 5-fold cross validation.
 
 Please first create the folder where label files would be produced.
 ```bash
@@ -667,15 +667,16 @@ done
 
 ## 3. Reproducing results
 
-All checkpoints would be stored in the `./checkpoint` directory.
-Inference outputs would be stored in the `./output/{dataset name}.{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
+Methods that require a training set are trained on TREC-DL 19 and then inferred on TREC-DL 20, and vice versa.
 
-
-```
-python -u ./process_robust04.py \
+Note that on Robust04, we employ 5-fold cross-validation.
+Please be aware that for Robust04, the [RLT literature](https://dl.acm.org/doi/10.1145/3341981.3344234) usually randomly divides the dataset into a training set (80% queries) and a test set (20% queries); however, different data division will impact the results.
+So we perform 5-fold cross-validation to eliminate the impact of the random data division on results.
+Next, we need to generate training sets comprising features and labels for each test set, e.g., if fold 1 is used for testing, folds 2, 3, 4 and 5 would be used for training...
+Use the following commands to generate sets of features and labels for each test fold:
+```python -u ./process_robust04.py \
 --mode merge \
 --fold_one_path ./datasets/robust04/features/robust04-fold1.feature-title-bm25-1000.json
-
 
 metrics=("monot5-1000-ndcg@20" "monot5-1000-ndcg@20-eet-alpha-0.001-beta0" "monot5-1000-ndcg@20-eet-alpha-0.001-beta1" "monot5-1000-ndcg@20-eet-alpha-0.001-beta2" "rankllama-doc-2048-1000-ndcg@20" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta0" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta1" "rankllama-doc-2048-1000-ndcg@20-eet-alpha-0.001-beta2")
 
@@ -686,6 +687,10 @@ do
 	--fold_one_path ./datasets/robust04/labels/robust04-fold1.label-title-bm25-1000.${metric}.json
 done
 ```
+
+All checkpoints would be stored in the `./checkpoint` directory.
+Inference outputs would be stored in the `./output/{dataset name}.{retriever name}` directory; an output file; each file has the same number of lines as queries in the test set; each line is composed of "query id\tpredicted cut-off".
+
 
 ###  3.1 Unsupervised RLT methods
 We consider 3 unsupervised methods, i.e., Fixed-k, Greedy-k, [Suprise](https://dl.acm.org/doi/abs/10.1145/3539618.3592066).

@@ -666,13 +666,14 @@ done
 ```
 
 ## 3. Reproducing results
+**This section could easily reproduce all results for RQ1, RQ2 and RQ3 in the paper**.
 
 Methods that require a training set are trained on TREC-DL 19 and then inferred on TREC-DL 20, and vice versa.
 
 Note that on Robust04, we employ 5-fold cross-validation.
 Please be aware that for Robust04, the [RLT literature](https://dl.acm.org/doi/10.1145/3341981.3344234) usually randomly divides the dataset into a training set (80% queries) and a test set (20% queries); however, different data division will impact the results.
 So we perform 5-fold cross-validation to eliminate the impact of the random data division on results.
-Next, we need to generate training sets comprising features and labels for each test set, e.g., if fold 1 is used for testing, folds 2, 3, 4 and 5 would be used for training...
+Next, for each test set, we need to generate corresponding training sets comprising features and labels, e.g., if fold 1 is used for testing, folds 2, 3, 4 and 5 would be used for training.
 Use the following commands to generate sets of features and labels for each test fold:
 ```bash
 python -u ./process_robust04.py \
@@ -699,7 +700,7 @@ We also consider Oracle here.
 
 #### 3.1.1 Fixed-k
 
-Run the following commands to perform Fixed-k on TREC-DL 19 and 20:
+Run the following commands to perform Fixed-k on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 

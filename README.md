@@ -1320,7 +1320,7 @@ First, the unsupervised method, Fixed-k (100 or 200) already strikes a good bala
 Second, supervised methods yield slightly superior re-ranking effectiveness but come with an increased re-ranking cost compared to Fixed-k (100 or 200). 
 Similar to the findings reported in the paper, MtCut, a supervised method that jointly learns RLT with other tasks, demonstrates improved re-ranking results. For example, without considering Oracle, for BM25--RankLLaMA, MtCut (β=2) achieves the highest re-ranking result (0.469) with an average re-ranking depth of 125.71. Similarly, for BM25–MonoT5, MtCut (β=0) attains the highest re-ranking result (0.560) with an average re-ranking depth of 754.96.
 
-Thirdly, Oracle surpasses all RLT methods in re-ranking effectiveness with limited re-ranking cost, underscoring the need to consider new RLT methods for re-ranking in future work.
+Thirdly, Oracle surpasses all RLT methods in re-ranking effectiveness with limited re-ranking cost; it underscores the need to propose new RLT methods for re-ranking for future work.
 
 Table 1: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25--RankLLaMA pipeline on Robust04. 
 | Method |Avg. k (cost) | nDCG@20|

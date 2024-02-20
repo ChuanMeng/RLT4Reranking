@@ -10,4 +10,3 @@ numpy
 gensim 
 ir-datasets
 datasets
-tevatron

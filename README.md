@@ -547,7 +547,7 @@ mkdir datasets/robust04/labels
 Use the following commands to generate the training labels on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -556,7 +556,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20 
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -572,7 +572,7 @@ python -u ./process_robust04.py \
 fold_ids=("1" "2" "3" "4" "5")
 for fold_id in "${fold_ids[@]}"
 do
-	python -u rlt/reranking_labels.py \
+	python -u ./rlt/reranking_labels.py \
 	--retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
 	--reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-rankllama-doc-2048-1000.txt \
 	--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
@@ -586,7 +586,7 @@ done
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -595,7 +595,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-splade-pp-ed-pytorch-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -608,7 +608,7 @@ python -u rlt/reranking_labels.py \
 Use the following commands to generate the training labels on TREC-DL 19 and 20:
 ```bash
 # TREC-DL 19
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-repllama-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -617,7 +617,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-repllama-1000-rankllama-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -630,7 +630,7 @@ python -u rlt/reranking_labels.py \
 Use the following commands to generate the training labels on TREC-DL 19 and 20, as well as Robust04:
 ```bash
 # TREC-DL 19
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-19-passage.run-original-bm25-1000-monot5-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-19-passage.qrels.txt \
@@ -639,7 +639,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # TREC-DL 20
-python -u rlt/reranking_labels.py \
+python -u ./rlt/reranking_labels.py \
 --retrieval_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000.txt \
 --reranking_run_path datasets/msmarco-v1-passage/runs/dl-20-passage.run-original-bm25-1000-monot5-1000.txt \
 --qrels_path datasets/msmarco-v1-passage/qrels/dl-20-passage.qrels.txt \
@@ -655,7 +655,7 @@ python -u ./process_robust04.py \
 fold_ids=("1" "2" "3" "4" "5")
 for fold_id in "${fold_ids[@]}"
 do
-	python -u rlt/reranking_labels.py \
+	python -u ./rlt/reranking_labels.py \
 	--retrieval_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000.txt \
 	--reranking_run_path datasets/robust04/runs/robust04-fold${fold_id}.run-title-bm25-1000-monot5-1000.txt \
 	--qrels_path datasets/robust04/qrels/robust04.qrels.txt \
@@ -889,7 +889,7 @@ We recommend using GPU to execute all commands in this section.
 ### 3.2.1 Train and infer BiCut
 Note that the training of BiCut is independent of re-ranking. 
 As shown in our paper, BiCut uses a hyperparameter "η" to control trade-offs between effectiveness and efficiency.
-Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
+Run the following commands to train BiCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19), and train and infer BiCut on Robust04 in a 5-fold cross-validation manner:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000")
 alphas=(0.4 0.5 0.6) # the symbol "alpha" used here corresponds to "η" as denoted in the paper.
@@ -1011,7 +1011,7 @@ done
 ```
 
 #### 3.2.2 Train and infer Choppy, AttnCut and MtCut 
-Run the following commands to train Choppy, AttnCut and MtCut on TREC-DL 19 (TREC-DL 20) and then infer it on TREC-DL 20 (TREC-DL 19):
+Run the following commands to train Choppy, AttnCut and MtCut on TREC-DL 19 (TREC-DL 20) and then infer them on TREC-DL 20 (TREC-DL 19), and train and infer them on Robust04 in a 5-fold cross-validation manner:
 ```bash
 retrievers=("original-bm25-1000" "original-splade-pp-ed-pytorch-1000" "original-repllama-1000" )
 metrics=("rankllama-1000-ndcg@10-eet-alpha-0.001-beta0" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta1" "rankllama-1000-ndcg@10-eet-alpha-0.001-beta2" "monot5-1000-ndcg@10-eet-alpha-0.001-beta0" "monot5-1000-ndcg@10-eet-alpha-0.001-beta1" "monot5-1000-ndcg@10-eet-alpha-0.001-beta2")
@@ -1263,12 +1263,12 @@ python -u ./rlt/evaluation.py \
 Use the following commands to evaluate RLT methods w.r.t the pipeline of SPLADE++--RankLLaMA:
 ```bash
 # TREC-DL 19
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-19-passage.original-splade-pp-ed-pytorch-1000/dl-19-passage.original-splade-pp-ed-pytorch-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
 
 # TREC-DL 20
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-20-passage.original-splade-pp-ed-pytorch-1000/dl-20-passage.original-splade-pp-ed-pytorch-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-splade-pp-ed-pytorch-1000.rankllama-1000-ndcg@10.json \
 ```
@@ -1276,12 +1276,12 @@ python -u ./evaluation.py \
 Use the following commands to evaluate RLT methods w.r.t the pipeline of RepLLaMA--RankLLaMA:
 ```bash
 # TREC-DL 19
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-19-passage.original-repllama-1000/dl-19-passage.original-repllama-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
 
 # TREC-DL 20
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-20-passage.original-repllama-1000/dl-20-passage.original-repllama-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-repllama-1000.rankllama-1000-ndcg@10.json \
 ```
@@ -1289,12 +1289,12 @@ python -u ./evaluation.py \
 Use the following commands to evaluate RLT methods w.r.t the pipeline of BM25--MonoT5:
 ```bash
 # TREC-DL 19
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-19-passage.original-bm25-1000/dl-19-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-19-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
 
 # TREC-DL 20
-python -u ./evaluation.py \
+python -u ./rlt/evaluation.py \
 --pattern './output/dl-20-passage.original-bm25-1000/dl-20-passage.original-bm25-1000.*' \
 --reranking_labels_path ./datasets/msmarco-v1-passage/labels/dl-20-passage.label-original-bm25-1000.monot5-1000-ndcg@10.json \
 

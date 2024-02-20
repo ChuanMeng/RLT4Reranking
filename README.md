@@ -1383,6 +1383,22 @@ python -u ./rlt/evaluation.py \
 python -u ./rlt/evaluation.py \
 --pattern './output/robust04-fold5.title-bm25-1000/robust04-fold5.*' \
 --reranking_labels_path ./datasets/robust04/labels/robust04-fold5.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+
+
+
+python -u ./process_robust04.py \
+--mode merge_k \
+--fold_one_pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*'
+
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04.title-bm25-1000/robust04.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04.label-title-bm25-1000.monot5-1000-ndcg@20.json
+
+python -u ./rlt/evaluation.py \
+--pattern './output/robust04.title-bm25-1000/robust04.*' \
+--reranking_labels_path ./datasets/robust04/labels/robust04.label-title-bm25-1000.rankllama-doc-2048-1000-ndcg@20.json
 ```
 
 ## 4. Reproducing plots
@@ -1392,147 +1408,66 @@ The recreated plots would be stored in the `./plots` directory.
 
 ## 4. Robust04 results
 
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold1). 
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04. 
 | Method |Avg. k | nDCG@20|
 |---|---|---|
-| w/o re-ranking | - | 0.395 |       
-| Fixed-k (10)   | 10 | 0.417 |         
-| Fixed-k (20)   | 20 | 0.425 |   
-| Fixed-k (100)  | 100 | 0.518 |   
-| Fixed-k (200)  | 200 | 0.534 |    
-| Fixed-k (500)  | 500 | 0.541|   
-| Fixed-k (1000) | 1000 | 0.540  |   
-| Surprise       | 709.00 | 0.544 | 
-| Greedy-k (β=0) | 894.00 | 0.540 |
-| BiCut (η=0.40) | 331.65 | 0.541 | 
-| Choppy (β=0)   | 500.40 | 0.527 | 
-| AttnCut (β=0)  | 804.48  | 0.544 | 
-| MtCut (β=0)    | 697.08 | 0.548 | 
-| Greedy-k (β=1) | 202.00 | 0.534 |
-| BiCut (η=0.50) | 277.44 | 0.543 | 
-| Choppy (β=1)   | 470.02 | 0.537 | 
-| AttnCut (β=1)  | 223.04 | 0.528 | 
-| MtCut (β=1)    | 232.79 | 0.530 |
-| Greedy-k (β=2) | 129.00 | 0.523 |
-| BiCut (η=0.60) | 130.12 | 0.526 | 
-| Choppy (β=2)   | *460.83* | *0.541* | 
-| AttnCut (β=2)  | 117.50 | 0.502 | 
-| MtCut (β=2)    | 135.52 | 0.519 |
-| Oracle         | 199.0 | 0.599 |
+| w/o re-ranking | - | 0.413 |       
+| Fixed-k (10)   | 10 | 0.440 |         
+| Fixed-k (20)   | 20 | 0.452 |   
+| Fixed-k (100)  | 100 | 0.543 |   
+| Fixed-k (200)  | 200  | 0.556 | 
+| Fixed-k (500)  | 500 | 0.556 |      
+| Fixed-k (1000) | 1000 | 0.556 |   
+| Surprise       | 721.91 | 0.556 |  
+| Greedy-k (β=0) | 795.41 | 0.556 |
+| BiCut (η=0.40) | 341.05 | 0.555 | 
+| Choppy (β=0)   | 489.28 | 0.538 | 
+| AttnCut (β=0)  | **799.28** | **0.560** | 
+| MtCut (β=0)    | **754.96** | **0.560** | 
+| Greedy-k (β=1) | 209.23 | 0.556  |
+| BiCut (η=0.50) | **243.79**  | **0.557** | 
+| Choppy (β=1)   | 512.17 | 0.555 | 
+| AttnCut (β=1)  | 261.03 | 0.554 | 
+| MtCut (β=1)    | 266.57 | 0.558 |
+| Greedy-k (β=2) | 142.37 | 0.545 |
+| BiCut (η=0.60) | 166.22 | 0.549 | 
+| Choppy (β=2)   | 484.45 | 0.550 | 
+| AttnCut (β=2)  | 131.48 | 0.539 | 
+| MtCut (β=2)    | 147.32 | 0.544 |
+| Oracle         | 212.35 | 0.635 |
 
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold2). 
+
+
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–RankLLaMA pipeline on Robust04. 
 | Method |Avg. k | nDCG@20|
 |---|---|---|
-| w/o re-ranking | - |  |       
-| Fixed-k (10)   |  |  |         
-| Fixed-k (20)   |  |  |   
-| Fixed-k (100)  |  |  |   
-| Fixed-k (200)  |  |  | 
-| Fixed-k (500)  |  |  |      
-| Fixed-k (1000) |  |  |   
-| Surprise       |  |  |  
-| Greedy-k (β=0) |  |  |
-| BiCut (η=0.40) |  |  | 
-| Choppy (β=0)   |  |  | 
-| AttnCut (β=0)  |  |  | 
-| MtCut (β=0)    |  |  | 
-| Greedy-k (β=1) |  |  |
-| BiCut (η=0.50) |  |  | 
-| Choppy (β=1)   |  |  | 
-| AttnCut (β=1)  |  |  | 
-| MtCut (β=1)    |  |  |
-| Greedy-k (β=2) |  |  |
-| BiCut (η=0.60) |  |  | 
-| Choppy (β=2)   |  |  | 
-| AttnCut (β=2)  |  |  | 
-| MtCut (β=2)    |  |  |
-| Oracle         |  |  |
+| w/o re-ranking | - | 0.413 |       
+| Fixed-k (10)   | 10 | 0.430 |         
+| Fixed-k (20)   | 20 | 0.435 |   
+| Fixed-k (100)  | 100 | 0.467 |   
+| Fixed-k (200)  | 200 | 0.465 |  
+| Fixed-k (500)  | 500 | 0.453 |      
+| Fixed-k (1000) | 1000 | 0.451 |   
+| Surprise       | 721.91 | 0.449 |  
+| Greedy-k (β=0) | 398.85 | 0.455 |
+| BiCut (η=0.40) | 341.05 | 0.461 | 
+| Choppy (β=0)   | 495.03 | 0.455 | 
+| AttnCut (β=0)  | 771.01 | 0.452 | 
+| MtCut (β=0)    | 590.67 | 0.457 | 
+| Greedy-k (β=1) | 136.62 | 0.468 |
+| BiCut (η=0.50) | 243.79 | 0.463 | 
+| Choppy (β=1)   | 480.02 | 0.456 | 
+| AttnCut (β=1)  | 237.37 | 0.462 | 
+| MtCut (β=1)    | 223.32 | 0.464 |
+| Greedy-k (β=2) | 121.34 | 0.468 |
+| BiCut (η=0.60) | 166.22 | 0.464 | 
+| Choppy (β=2)   | 487.69 | 0.453 | 
+| AttnCut (β=2)  | 121.27 | 0.465 | 
+| MtCut (β=2)    | **125.71** | **0.469** |
+| Oracle         | 131.42 | 0.559 |
 
 
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold3). 
-| Method |Avg. k | nDCG@20|
-|---|---|---|
-| w/o re-ranking | - |  |       
-| Fixed-k (10)   |  |  |         
-| Fixed-k (20)   |  |  |   
-| Fixed-k (100)  |  |  |   
-| Fixed-k (200)  |  |  |  
-| Fixed-k (500)  |  |  |      
-| Fixed-k (1000) |  |  |   
-| Surprise       |  |  |  
-| Greedy-k (β=0) |  |  |
-| BiCut (η=0.40) |  |  | 
-| Choppy (β=0)   |  |  | 
-| AttnCut (β=0)  |  |  | 
-| MtCut (β=0)    |  |  | 
-| Greedy-k (β=1) |  |  |
-| BiCut (η=0.50) |  |  | 
-| Choppy (β=1)   |  |  | 
-| AttnCut (β=1)  |  |  | 
-| MtCut (β=1)    |  |  |
-| Greedy-k (β=2) |  |  |
-| BiCut (η=0.60) |  |  | 
-| Choppy (β=2)   |  |  | 
-| AttnCut (β=2)  |  |  | 
-| MtCut (β=2)    |  |  |
-| Oracle         |  |  |
 
-
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold4). 
-| Method |Avg. k | nDCG@20|
-|---|---|---|
-| w/o re-ranking | - |  |       
-| Fixed-k (10)   |  |  |         
-| Fixed-k (20)   |  |  |   
-| Fixed-k (100)  |  |  |   
-| Fixed-k (200)  |  |  |  
-| Fixed-k (500)  |  |  |      
-| Fixed-k (1000) |  |  | 
-| Surprise       |  |  |    
-| Greedy-k (β=0) |  |  |
-| BiCut (η=0.40) |  |  | 
-| Choppy (β=0)   |  |  | 
-| AttnCut (β=0)  |  |  | 
-| MtCut (β=0)    |  |  | 
-| Greedy-k (β=1) |  |  |
-| BiCut (η=0.50) |  |  | 
-| Choppy (β=1)   |  |  | 
-| AttnCut (β=1)  |  |  | 
-| MtCut (β=1)    |  |  |
-| Greedy-k (β=2) |  |  |
-| BiCut (η=0.60) |  |  | 
-| Choppy (β=2)   |  |  | 
-| AttnCut (β=2)  |  |  | 
-| MtCut (β=2)    |  |  |
-| Oracle         |  |  |
-
-
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04 (fold5). 
-| Method |Avg. k | nDCG@20|
-|---|---|---|
-| w/o re-ranking | - |  |       
-| Fixed-k (10)   |  |  |         
-| Fixed-k (20)   |  |  |   
-| Fixed-k (100)  |  |  |   
-| Fixed-k (200)  |  |  |   
-| Fixed-k (500)  |  |  |     
-| Fixed-k (1000) |  |  |    
-| Surprise       | 715.92 | 0.554 | 
-| Greedy-k (β=0) | 819.00 | 0.554 |
-| BiCut (η=0.40) |  |  | 
-| Choppy (β=0)   |  |  | 
-| AttnCut (β=0)  |  |  | 
-| MtCut (β=0)    |  |  | 
-| Greedy-k (β=1) | 209.0 | 0.558 |
-| BiCut (η=0.50) |  |  | 
-| Choppy (β=1)   |  |  | 
-| AttnCut (β=1)  |  |  | 
-| MtCut (β=1)    |  |  |
-| Greedy-k (β=2) | 129.0 | 0.547 |
-| BiCut (η=0.60) |  |  | 
-| Choppy (β=2)   |  |  | 
-| AttnCut (β=2)  |  |  | 
-| MtCut (β=2)    |  |  |
-| Oracle         | 197.76 | 0.629 |
 
 

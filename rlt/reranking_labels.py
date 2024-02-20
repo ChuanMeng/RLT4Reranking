@@ -47,6 +47,8 @@ if __name__ == '__main__':
 
     if args.metric=="ndcg@10":
         args.metric = "ndcg_cut_10"
+    if args.metric=="ndcg@20":
+        args.metric = "ndcg_cut_20"
     elif args.metric=="mrr@10":
         args.metric ='recip_rank'
     elif args.metric=="map@100":
@@ -54,11 +56,13 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError
 
-    if args.metric=="ndcg_cut_10":
+    if args.metric=="ndcg_cut_10" or "ndcg_cut_20":
         assert args.binarise_qrels == False
     elif (args.metric=="recip_rank" or args.metric=="map@100")  and "dl" in args.dataset_name:
         assert args.binarise_qrels == True
     elif (args.metric=="recip_rank" or args.metric=="map@100") and ("dev" in args.dataset_name or "train" in args.dataset_name):
+        assert args.binarise_qrels == False
+    elif (args.metric=="recip_rank" or args.metric=="map@100") and ("robust04" in args.dataset_name):
         assert args.binarise_qrels == False
 
     with open(args.retrieval_run_path, 'r') as r:
@@ -88,9 +92,21 @@ if __name__ == '__main__':
 
     q2result = {}
     q2list = {}
+
+    if "645" in reranking_run:
+        if 'FT932-6862' not in reranking_run["645"]:
+            reranking_run["645"]['FT932-6862']=0.0
+            print("add doc FT932-6862 to the re-ranking list")
+
+
     for qid, docid2score in retrieval_run.items():
 
         if qid not in qrels:
+            print(f"throw query{qid} because it is not in qrels")
+            continue
+
+        if len(docid2score) < args.seq_len:
+            print(f"throw query{qid} because it has only {len(docid2score)} items")
             continue
 
         # score normalisation
@@ -106,6 +122,9 @@ if __name__ == '__main__':
         q2result[qid]=[]
         q2list[qid]={}
 
+
+        assert len(retrieval_list)==len(reranking_list),print(qid,len(retrieval_list),len(reranking_list))
+
         for idx in range(args.seq_len):
             k = idx + 1  # [1, 1000]
 
@@ -116,13 +135,14 @@ if __name__ == '__main__':
             for docid, _ in retrieval_list[:k]:
                 partial_reranking_list.append((docid, reranking_run[qid][docid]))
 
+
             partial_reranking_list = [(docid, score) for docid, score in sorted(partial_reranking_list, key=lambda item: item[1], reverse=True)]
 
             merged_list = partial_reranking_list + retrieval_list[k:]
 
             q2list[qid][k]=merged_list
 
-            assert len(merged_list) == len(retrieval_list)==len(reranking_list)
+            assert len(merged_list) == len(retrieval_list)==len(reranking_list) == args.seq_len
 
             # 2. evaluation
             if args.metric == 'recip_rank':
@@ -132,7 +152,7 @@ if __name__ == '__main__':
             q2metric2result = evaluator.evaluate({qid:dict(merged_list)})  # {qid:{ndcg@10:xx,...},...}
             #aggregated_result = pytrec_eval.compute_aggregated_measure(metric,[metric2result[metric] for metric2result in q2metric2result.values()])
             q2result[qid].append(q2metric2result[qid][args.metric])
-
+            
     # analysis
     q_result_matrix=[]
     q2optimalresult = {}
@@ -142,6 +162,10 @@ if __name__ == '__main__':
 
     for qid in retrieval_run.keys():
         if qid not in qrels:
+            print(f"throw query{qid} because it is not in qrels")
+            continue
+        if len(retrieval_run[qid]) < args.seq_len:
+            print(f"throw query{qid} because it has only {len(retrieval_run[qid])} items")
             continue
 
         q_result_matrix.append(q2result[qid])
@@ -155,7 +179,7 @@ if __name__ == '__main__':
             rate.append(1 if docid in qrels[qid] else 0)
         rates.append(sum(rate)/10)
 
-    assert len(rates)==len(qrels)
+    #assert len(rates)==len(qrels)
     rates_avg = sum(rates)/len(rates)
 
 
@@ -195,7 +219,7 @@ if __name__ == '__main__':
         f.write(json.dumps(q2result))
         f.close()
 
-        for beta in [0, 0.5, 1 , 2]:
+        for beta in [0, 0.5, 1, 2]:
             for alpha in [-0.05, -0.01, -0.005, -0.001]:
                 q2eet={}
                 for qid in q2result.keys():

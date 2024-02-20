@@ -39,7 +39,7 @@ class ChoppyLoss(torch.nn.Module):
 
         r = data["label"] # [B, S]
 
-        loss_matrix = output.squeeze().mul(r) # [B,S]
+        loss_matrix = output.squeeze(-1).mul(r) # [B,S]
 
         return -torch.sum(loss_matrix).div(output.shape[0])
 
@@ -62,7 +62,7 @@ class AttnCutLoss(torch.nn.Module):
         q = q.div(norm_factor)
 
         # [B, S]
-        output = torch.log(output.squeeze())
+        output = torch.log(output.squeeze(-1))
         loss_matrix = output.mul(q)
 
         return -torch.sum(loss_matrix).div(output.shape[0])
@@ -88,8 +88,8 @@ class RerankLoss(torch.nn.Module):
         if total_rele == 0 or total_irre == 0:
             return t.tensor(0, requires_grad=True)
 
-        y_pos_mean = y_rele.mul(output.squeeze()).sum().div(total_rele)
-        y_neg_mean = y_irre.mul(output.squeeze()).sum().div(total_irre)
+        y_pos_mean = y_rele.mul(output.squeeze(-1)).sum().div(total_rele)
+        y_neg_mean = y_irre.mul(output.squeeze(-1)).sum().div(total_irre)
 
         return max(torch.tensor(0., requires_grad=True), y_neg_mean - y_pos_mean + self.margin)
 
@@ -130,7 +130,7 @@ class MtCutLoss(torch.nn.Module):
         if self.num_tasks == 3 or self.num_tasks == 2.1:
             # pred_y.squeeze() [B, S] sigmoid
             # class_label [B, S]
-            classiloss = self.classiloss(pred_y.squeeze(), class_label).mul(self.classi_weight)
+            classiloss = self.classiloss(pred_y.squeeze(-1), class_label).mul(self.classi_weight)
 
         if self.num_tasks == 3:
             return cutloss.add(rerankloss).add(classiloss)

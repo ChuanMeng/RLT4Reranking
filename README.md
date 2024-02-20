@@ -159,7 +159,7 @@ python -u format.py \
 ### 2.3 Obtain re-ranked lists
 We consider RankLLaMA (7B) and MonoT5 as re-rankers.
 We use [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) to perform RankLLaMA.
-We already put the source code of [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) in the current directory.
+We already put the source code of [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) in the current directory and made some modifications to it for better adapting Robust04.
 So please install [Tevatron](https://github.com/texttron/tevatron/tree/main/examples/rankllama) by its source code:
 ```bash
 cd tevatron
@@ -1235,6 +1235,8 @@ A file that shows the results (e.g., average predicted cut-offs, and re-ranking 
 Note that for Robust04, we already get the prediction on each fold, we need to merge all folds into one file before performing the evaluation.
 Please run the following commands to merge predictions:
 ```bash
+mkdir ./output/robust04.title-bm25-1000
+
 python -u ./process_robust04.py \
 --mode merge_k \
 --fold_one_pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*'

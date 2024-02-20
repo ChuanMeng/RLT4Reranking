@@ -8,7 +8,6 @@ import more_itertools
 import json
 import os
 from scipy import stats
-from utils import data_split
 import logging
 import math
 
@@ -54,13 +53,14 @@ class Dataset(torch.utils.data.Dataset):
 
         for qid in features.keys():
             if qid not in qrels:
+                logging.info(f"query {qid} is not in qrels. Throw it away.")
                 continue
-
-            num_q_real+=1
 
             if len(features[qid]["pos"])!=self.args.seq_len:
                 logging.info(f"query {qid} has less than {self.args.seq_len} retrieved items. Throw it away.")
                 continue
+
+            num_q_real += 1
 
             pos = features[qid]["pos"]
 
@@ -72,6 +72,11 @@ class Dataset(torch.utils.data.Dataset):
 
                 if self.args.binarise_qrels:
                     if rel_grade >= 2:
+                        rel_grade = 1
+                    else:
+                        rel_grade = 0
+                else:
+                    if rel_grade >= 1:
                         rel_grade = 1
                     else:
                         rel_grade = 0

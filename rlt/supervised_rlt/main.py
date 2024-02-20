@@ -2,14 +2,14 @@
 sys.path.append('./')
 import json
 import torch
-from rlt.dataset import Dataset, collate_fn
-from rlt.models.bicut import BiCut
-from rlt.models.choppy import Choppy
-from rlt.models.attncut import AttnCut
-from rlt.models.mmoecut import MMOECut
-from rlt.models.lecut import LeCut
-from rlt.trainer import Trainer
-from rlt.utils import replicability
+from dataset import Dataset, collate_fn
+from models.bicut import BiCut
+from models.choppy import Choppy
+from models.attncut import AttnCut
+from models.mmoecut import MMOECut
+from models.lecut import LeCut
+from trainer import Trainer
+from utils import replicability
 import losses
 import argparse
 import os
@@ -241,6 +241,7 @@ if __name__ == '__main__':
     parser.add_argument("--qrels_path", type=str)
     parser.add_argument("--truncation_path", type=str)
     parser.add_argument("--label_path", type=str)
+    parser.add_argument("--warm_up_path", type=str, default=None)
 
     parser.add_argument("--binarise_qrels", action='store_true') # only turn on for datasets having graded relevance judgments
 

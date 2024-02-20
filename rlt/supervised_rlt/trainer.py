@@ -103,13 +103,13 @@ class Trainer(object):
 
 
                 elif self.args.name =="mmoecut":
-                    p = p[-1].detach().cpu().squeeze().numpy()  # [B, S]
+                    p = p[-1].detach().cpu().squeeze(-1).numpy()  # [B, S]
                     k = np.argmax(p, axis=1) + 1  # [B]
                 else:
-                    p = p.detach().cpu().squeeze().numpy()  # [B, S]
+                    p = p.detach().cpu().squeeze(-1).numpy()  # [B, S]
                     k = np.argmax(p, axis=1) + 1  # [B]
 
-                logging.info(f"Predicted k:\n{k}")
+                logging.info(f"Predicted k: {k}")
 
                 for index, qid in enumerate(data["qid"]):
                     q2p_w.write(qid + '\t' + str(k[index]) + '\n')

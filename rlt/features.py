@@ -44,14 +44,30 @@ def preproces_corpus(index_path):
     frequency = defaultdict(int)
     preprocessed_corpus ={}
     d_count= 0
-    with open(index_path, "r") as r:
-        for line in tqdm(r):
-            docid, text = line.strip().split("\t")
-            preprocessed_doc = preprocess_doc(text)
-            for token in preprocessed_doc:
-                frequency[token]+=1
-            preprocessed_corpus[docid] = preprocessed_doc
-            d_count+=1
+
+    if index_path.endswith("tsv"):
+        with open(index_path, "r") as r:
+            for line in tqdm(r):
+                print(line)
+                docid, text = line.strip().split("\t")
+                preprocessed_doc = preprocess_doc(text)
+                for token in preprocessed_doc:
+                    frequency[token] += 1
+                preprocessed_corpus[docid] = preprocessed_doc
+                d_count += 1
+
+    elif index_path.endswith("json"):
+        with open(index_path, 'r') as r:
+            corpus = json.loads(r.read())
+            for docid in tqdm(corpus.keys()):
+                text = corpus[docid]["title"]+". "+corpus[docid]["text"]
+                preprocessed_doc = preprocess_doc(text)
+                for token in preprocessed_doc:
+                    frequency[token] += 1
+                preprocessed_corpus[docid] = preprocessed_doc
+                d_count += 1
+    else:
+        raise NotImplementedError
 
     print(f"# doc: {d_count}")
     print(f"# vocab (initial): {len(frequency)}")
@@ -108,6 +124,7 @@ if __name__ == '__main__':
     parser.add_argument("--output_path", type=str)
     parser.add_argument("--cache_dir", type=str)
     parser.add_argument("--token", type=str)
+    parser.add_argument("--seq_len", type=int, required=True)
 
     args = parser.parse_args()
 
@@ -136,6 +153,10 @@ if __name__ == '__main__':
         for qid in tqdm(run.keys()):
 
             if qid not in qrels:
+                continue
+
+            if len(run[qid])<args.seq_len:
+                print(f"throw query{qid} because it has only {len(run[qid])} items")
                 continue
 
             feature[qid]={}

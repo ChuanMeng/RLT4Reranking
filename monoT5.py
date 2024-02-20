@@ -50,6 +50,10 @@ if __name__ == "__main__":
             passages = [[entry[0],json.loads(searcher.doc(entry[0]).raw())['contents']]  for entry in run[qid]]
         elif "v2" in args.index_path:
             passages = [[entry[0], json.loads(searcher.doc(entry[0]).raw())['passage']] for entry in run[qid]]
+        elif "robust04" in args.index_path:
+            passages = [[entry[0], searcher.doc(entry[0]).raw()] for entry in run[qid]]
+        else:
+            raise NotImplementedError
 
 
         texts = [Text(p[1], {'docid': p[0]}, 0) for p in passages]

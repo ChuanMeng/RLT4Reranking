@@ -180,7 +180,8 @@ All re-ranked lists would be stored in the directory `datasets/msmarco-v1-passag
 
 Note that we recommend using GPU to execute all commands in this section.
 
-#### 2.3.1 BM25--RankLLaMA 
+#### 2.3.1 BM25--RankLLaMA
+Note that Robust04 is a document-based corpus, so we use RankLLaMA's checkpoint ("castorini/rankllama-v1-7b-lora-doc") trained on the MS MARCO v1 document corpus, and set the max length of a document to 2048.
 Use the following commands to use RankLLaMA to re-rank the retrieved list returned by BM25 on TREC-DL 19 and 20 and Robust04:
 ```bash
 # TREC-DL 19 
@@ -345,8 +346,7 @@ python -u ./tevatron/examples/rankllama/reranker_inference.py \
 
 #### 2.3.4 BM25--MonoT5 
 
-Note that on Robust04, we follow th
-
+Note that to deal with the long documents in Robust04, MonoT5 uses the [MaxP technique](https://aclanthology.org/2020.findings-emnlp.63/).
 Use the following commands to use MonoT5 to re-rank BM25 results on TREC-DL 19 and 20, as well as [Robust04](https://github.com/castorini/pygaggle/blob/master/docs/experiments-robust04-monot5-gpu.md):
 ```bash
 # TREC-DL 19

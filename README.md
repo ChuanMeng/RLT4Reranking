@@ -2,7 +2,7 @@
 Supplementary materials for the paper titled "_Ranked List Truncation: From Retrieval to Re-ranking_". 
 In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
-**This repository empowers anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
+**This repository enables anyone to replicate all numerical results and recreate all visual plots as presented in the paper.**
 `plots.ipynb` can recreate all plots in the paper.
 
 This repository is structured into four distinct parts:
@@ -11,13 +11,14 @@ This repository is structured into four distinct parts:
    * 2.1 Download raw data
    * 2.2 Obtain retrieved lists
    * 2.3 Obtain re-ranked lists
-   * 2.4 Training label generation
-   * 2.5 Feature generation
+   * 2.4 Feature generation
+   * 2.5 Training label generation
 3. Reproducing results
    * 3.1 Unsupervised RLT methods
    * 3.2 Supervised RLT methods
    * 3.3 Evaluation
 4. Reproducing plots
+5. Robust04 results
 
 ## 1. Prerequisites
 We recommend executing all processes in a Linux environment.
@@ -59,14 +60,15 @@ mv ./datasets/msmarco-v1-passage/collection/collection.tsv ./datasets/msmarco-v1
 ```
 
 #### 2.1.2 Robust04
-We follow `ir_datasets` to obtain Robust04 queries and the collection; please follow the [instruction](https://ir-datasets.com/trec-robust04.html#trec-robust04) and then run the following commands:
+We follow `ir_datasets` to fetch Robust04 queries and the collection; please follow finish what the [instruction](https://ir-datasets.com/trec-robust04.html#trec-robust04) requires and before executing the following commands:
 ```bash
 # queries & collection
 mkdir datasets/robust04/
 mkdir datasets/robust04/collection
 mkdir datasets/robust04/queries
 
-python -u preprocess_robust04.py \
+python -u process_robust04.py \
+--mode download
 --query_output_path ./datasets/robust04/queries/robust04.query-title.tsv \
 --collection_output_path ./datasets/robust04/collection/robust04.json
 
@@ -405,7 +407,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # Robust04
-python -u ./preprocess_robust04.py \
+python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-rankllama-doc-2048-1000.txt
 
@@ -516,7 +518,7 @@ python -u rlt/reranking_labels.py \
 --output_path datasets/msmarco-v1-passage/labels
 
 # Robust04
-python -u ./preprocess_robust04.py \
+python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000-monot5-1000.txt
 
@@ -622,7 +624,7 @@ python -u ./rlt/document_features.py \
 --mode infer 
 
 # Robust04
-python -u ./preprocess_robust04.py \
+python -u ./process_robust04.py \
 --mode split_run \
 --run_path ./datasets/robust04/runs/robust04.run-title-bm25-1000.txt
 
@@ -1386,7 +1388,6 @@ python -u ./rlt/evaluation.py \
 
 
 
-
 python -u ./process_robust04.py \
 --mode merge_k \
 --fold_one_pattern './output/robust04-fold1.title-bm25-1000/robust04-fold1.*'
@@ -1406,7 +1407,36 @@ Run `plots.ipynb` can recreate all plots represented in the paper.
 The recreated plots would be stored in the `./plots` directory.
 
 
-## 4. Robust04 results
+## 5. Robust04 results
+
+Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–RankLLaMA pipeline on Robust04. 
+| Method |Avg. k | nDCG@20|
+|---|---|---|
+| w/o re-ranking | - | 0.413 |       
+| Fixed-k (10)   | 10 | 0.430 |         
+| Fixed-k (20)   | 20 | 0.435 |   
+| Fixed-k (100)  | 100 | 0.467 |   
+| Fixed-k (200)  | 200 | 0.465 |  
+| Fixed-k (500)  | 500 | 0.453 |      
+| Fixed-k (1000) | 1000 | 0.451 |   
+| Surprise       | 721.91 | 0.449 |  
+| Greedy-k (β=0) | 398.85 | 0.455 |
+| BiCut (η=0.40) | 341.05 | 0.461 | 
+| Choppy (β=0)   | 495.03 | 0.455 | 
+| AttnCut (β=0)  | 771.01 | 0.452 | 
+| MtCut (β=0)    | 590.67 | 0.457 | 
+| Greedy-k (β=1) | 136.62 | 0.468 |
+| BiCut (η=0.50) | 243.79 | 0.463 | 
+| Choppy (β=1)   | 480.02 | 0.456 | 
+| AttnCut (β=1)  | 237.37 | 0.462 | 
+| MtCut (β=1)    | 223.32 | 0.464 |
+| Greedy-k (β=2) | 121.34 | 0.468 |
+| BiCut (η=0.60) | 166.22 | 0.464 | 
+| Choppy (β=2)   | 487.69 | 0.453 | 
+| AttnCut (β=2)  | 121.27 | 0.465 | 
+| MtCut (β=2)    | **125.71** | **0.469** |
+| Oracle         | 131.42 | 0.559 |
+
 
 Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–MonoT5 pipeline on Robust04. 
 | Method |Avg. k | nDCG@20|
@@ -1438,34 +1468,6 @@ Table: A comparison of RLT methods, optimized for re-ranking effectiveness/effic
 
 
 
-
-Table: A comparison of RLT methods, optimized for re-ranking effectiveness/efficiency tradeoffs, in predicting re-ranking cut-off points for the BM25–RankLLaMA pipeline on Robust04. 
-| Method |Avg. k | nDCG@20|
-|---|---|---|
-| w/o re-ranking | - | 0.413 |       
-| Fixed-k (10)   | 10 | 0.430 |         
-| Fixed-k (20)   | 20 | 0.435 |   
-| Fixed-k (100)  | 100 | 0.467 |   
-| Fixed-k (200)  | 200 | 0.465 |  
-| Fixed-k (500)  | 500 | 0.453 |      
-| Fixed-k (1000) | 1000 | 0.451 |   
-| Surprise       | 721.91 | 0.449 |  
-| Greedy-k (β=0) | 398.85 | 0.455 |
-| BiCut (η=0.40) | 341.05 | 0.461 | 
-| Choppy (β=0)   | 495.03 | 0.455 | 
-| AttnCut (β=0)  | 771.01 | 0.452 | 
-| MtCut (β=0)    | 590.67 | 0.457 | 
-| Greedy-k (β=1) | 136.62 | 0.468 |
-| BiCut (η=0.50) | 243.79 | 0.463 | 
-| Choppy (β=1)   | 480.02 | 0.456 | 
-| AttnCut (β=1)  | 237.37 | 0.462 | 
-| MtCut (β=1)    | 223.32 | 0.464 |
-| Greedy-k (β=2) | 121.34 | 0.468 |
-| BiCut (η=0.60) | 166.22 | 0.464 | 
-| Choppy (β=2)   | 487.69 | 0.453 | 
-| AttnCut (β=2)  | 121.27 | 0.465 | 
-| MtCut (β=2)    | **125.71** | **0.469** |
-| Oracle         | 131.42 | 0.559 |
 
 
 

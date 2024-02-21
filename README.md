@@ -9,7 +9,7 @@ Our **Lessons**:
 **This repository enables anyone to replicate all numerical results and recreate all plots as presented in the paper.**
 **`plots.ipynb` can recreate all plots in the paper**.
 
-**In the directory `results_in_papers`, you will find RLT methods’ output files corresponding to all tables in our paper. 
+**In the `results_in_papers` directory, you will find RLT methods' output files corresponding to all tables in our paper. 
 Each line in a file comprises "query id\tpredicted cut-off"**.
 
 This repository is structured into four distinct parts:

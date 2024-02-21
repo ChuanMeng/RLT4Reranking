@@ -1,6 +1,10 @@
 # Ranked List Truncation for Re-ranking (RLT4Reranking)
 Supplementary materials for the paper titled "_Ranked List Truncation: From Retrieval to Re-ranking_". 
-In this paper, we reproduce a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we seek to examine to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
+In this paper, we have reproduced a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we have examined to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
+**Lessons** are summarized as follows:
+* Oracle surpasses all RLT methods in re-ranking effectiveness and incurs only limited re-ranking costs, highlighting substantial room for improvement in predicting query-specific re-ranking depth.
+* Applying the fixed-re-ranking depth 100/200 typically strikes a good balance between re-ranking effectiveness and efficiency compared to other RLT methods; deeper re-ranking depths, like 1000, do not necessarily improve results, leading to computational resource wastage.
+* Supervised RLT methods strike a decent effectiveness/efficiency trade-off or only yield better re-ranking effectiveness in some cases; however, the improvement over unsupervised ones (e.g., fixed depth) is generally marginal, emphasizing the need for our community to propose better supervised RLT methods for re-ranking in future.
 
 **This repository enables anyone to replicate all numerical results and recreate all plots as presented in the paper.**
 `plots.ipynb` can recreate all plots in the paper.
@@ -1318,7 +1322,7 @@ Table 1 and Table 2 show the results of RLT methods in predicting re-ranking cut
 Surprisingly, MonoT5 generally performs better than RankLLaMA on Robust04.
 We have three main observations for RLT methods.
 
-First, the unsupervised method, Fixed-k (100 or 200) already strikes a good balance between re-ranking effectiveness and efficiency compared to other baselines. Also, deeper re-ranking depths, e.g., Fixed-k (1000), do not necessarily yield better results, resulting in a waste of computational resources.
+First, the unsupervised method, Fixed-k (100 or 200) already strikes a good balance between re-ranking effectiveness and efficiency compared to other methods. Also, deeper re-ranking depths, e.g., Fixed-k (1000), do not necessarily yield better results, resulting in a waste of computational resources.
 
 Second, supervised methods yield slightly superior re-ranking effectiveness but come with an increased re-ranking cost compared to Fixed-k (100 or 200). 
 Similar to the findings reported in the paper, MtCut, a supervised method that jointly learns RLT with other tasks, demonstrates improved re-ranking results. For example, without considering Oracle, for BM25--RankLLaMA, MtCut (β=2) achieves the highest re-ranking result (0.469) with an average re-ranking depth of 125.71. Similarly, for BM25–MonoT5, MtCut (β=0) attains the highest re-ranking result (0.560) with an average re-ranking depth of 754.96.

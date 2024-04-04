@@ -9,7 +9,7 @@ import torch
 
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
-from transformers import (HfArgumentParser,) # HfArgumentParser是Transformer框架中的命令行解析工具
+from transformers import (HfArgumentParser,) 
 
 from tevatron.arguments import ModelArguments, DataArguments, \
     TevatronTrainingArguments as TrainingArguments
@@ -44,8 +44,6 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path, # tokenizer_name: meta-llama/Llama-2-7b-hf
-        cache_dir = "/gpfs/work3/0/guse0654/cache/models/",
-        token = "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",
     )
 
 
@@ -58,8 +56,6 @@ def main():
     model = RerankerModel.load(
         model_name_or_path=model_args.model_name_or_path, # castorini/rankllama-v1-7b-lora-passage
         torch_dtype=torch.float16 if training_args.fp16 else torch.float32, # fp16
-        cache_dir = "/gpfs/work3/0/guse0654/cache/models/",
-        token = "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",
     )
 
     rerank_dataset = HFRerankDataset(tokenizer=tokenizer, data_args=data_args, cache_dir=data_args.data_cache_dir or model_args.cache_dir)

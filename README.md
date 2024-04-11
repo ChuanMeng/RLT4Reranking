@@ -1,6 +1,17 @@
 # Ranked List Truncation for Re-ranking (RLT4Reranking)
 Supplementary materials for the paper titled "_Ranked List Truncation for Large Language Model-based Re-Ranking_". 
 In this paper, we have reproduced a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we have examined to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
+
+We kindly ask you to cite our papers if you find this repository useful: 
+```
+@inproceedings{meng2024ranked,
+  title={Ranked List Truncation for Large Language Model-based Re-Ranking},
+  author={Meng, Chuan and Arabzadeh, Negar and Askari, Arian and Aliannejadi, Mohammad and de Rijke, Maarten},
+  booktitle={SIGIR},
+  year={2024},
+}
+```
+
 Our **Lessons**:
 * Oracle surpasses all RLT methods in re-ranking effectiveness and incurs limited re-ranking costs, highlighting substantial room for improvement in predicting query-specific re-ranking depth in future.
 * Applying the fixed-re-ranking depth 100/200 typically strikes a good balance between re-ranking effectiveness and efficiency compared to other RLT methods; deeper re-ranking depths, like 1000, do not necessarily improve results, leading to wasted computational resources.

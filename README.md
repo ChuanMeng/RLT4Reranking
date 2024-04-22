@@ -1,5 +1,7 @@
 # Ranked List Truncation for Re-ranking (RLT4Reranking)
-Supplementary materials for the paper titled "_Ranked List Truncation for Large Language Model-based Re-Ranking_", which has been published at The 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024) as a long paper.
+![](https://api.visitorbadge.io/api/VisitorHit?user=ChuanMeng&repo=RLT4Reranking&countColor=%237B1E7A)
+
+Supplementary materials for the paper titled "_Ranked List Truncation for Large Language Model-based Re-Ranking_", which has been published at **The 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)** as a **long** paper.
 
 In this paper, we have reproduced a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we have examined to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
 
@@ -12,17 +14,6 @@ We kindly ask you to cite our papers if you find this repository useful:
   year={2024},
 }
 ```
-
-Our **Lessons**:
-* Oracle surpasses all RLT methods in re-ranking effectiveness and incurs limited re-ranking costs, highlighting substantial room for improvement in predicting query-specific re-ranking depth in future.
-* Applying the fixed-re-ranking depth 100/200 typically strikes a good balance between re-ranking effectiveness and efficiency compared to other RLT methods; deeper re-ranking depths, like 1000, do not necessarily improve results, leading to wasted computational resources.
-* Supervised RLT methods strike a decent effectiveness/efficiency trade-off in some cases; however, the improvement over unsupervised ones (e.g., fixed depth) is not readily apparent, emphasizing the need for our community to propose new supervised RLT methods for re-ranking in future.
-
-**This repository enables anyone to replicate all numerical results and recreate all plots as presented in the paper.**
-**`plots.ipynb` can recreate all plots in the paper**.
-
-**In the `results_in_papers` directory, you will find RLT methods' output files corresponding to all tables in our paper. 
-Each line in a file comprises "query id\tpredicted cut-off"**.
 
 This repository is structured into four distinct parts:
 1. Prerequisites

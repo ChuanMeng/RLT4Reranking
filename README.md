@@ -3,7 +3,7 @@
 
 Supplementary materials for the paper titled "_Ranked List Truncation for Large Language Model-based Re-Ranking_", which has been published at **The 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)** as a **long** paper.
 
-In this paper, we have reproduced a comprehensive ranked list truncation (RLT) methods, originally designed for optimizing retrieval, in a "retrieve-then-re-rank" setup; we have examined to what extent established findings on RLT for retrieval are generalizable to the ``retrieve-then-re-rank'' setup.
+In this paper, we have reproduced numerous ranked list truncation (RLT) methods in a "retrieve-then-re-rank" setup.
 
 We kindly ask you to cite our papers if you find this repository useful: 
 ```

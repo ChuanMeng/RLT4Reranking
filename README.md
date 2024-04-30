@@ -1,7 +1,7 @@
 # Ranked List Truncation for Re-ranking (RLT4Reranking)
 ![](https://api.visitorbadge.io/api/VisitorHit?user=ChuanMeng&repo=RLT4Reranking&countColor=%237B1E7A)
 
-Supplementary materials for the paper titled "_Ranked List Truncation for Large Language Model-based Re-Ranking_", which has been published at **The 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)** as a **long** paper.
+Supplementary materials for the paper [Ranked List Truncation for Large Language Model-based Re-Ranking](https://arxiv.org/abs/2404.18185), which has been published at **The 47th International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR 2024)** as a **long** paper.
 
 In this paper, we have reproduced numerous ranked list truncation (RLT) methods in a "retrieve-then-re-rank" setup.
 

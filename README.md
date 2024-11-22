@@ -10,8 +10,9 @@ We kindly ask you to cite our papers if you find this repository useful:
 @inproceedings{meng2024ranked,
   title={Ranked List Truncation for Large Language Model-based Re-Ranking},
   author={Meng, Chuan and Arabzadeh, Negar and Askari, Arian and Aliannejadi, Mohammad and de Rijke, Maarten},
-  booktitle={SIGIR},
-  year={2024},
+  booktitle={Proceedings of the 47th International ACM SIGIR Conference on Research and Development in Information Retrieval},
+  pages={141--151},
+  year={2024}
 }
 ```
 
